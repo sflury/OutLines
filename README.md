@@ -24,11 +24,14 @@ example applications to the \[O III\] line in Mrk 462.
 ```
 from numpy import arange
 from OutLines import *
+# speed of light in km/s
+c    = 2.99792458e5
 # rest-frame wavelengths
 wr = arange(1020,1050,0.25)
 # predict line profiles for both [O III] transitions using Mrk 462 results
-oiii_outflow = 0.332*f5007 * phi_out(wr,5007-47.932,745,1,1.3) + f5007 * phi_out(wr,5007,745,1.122,1.369)
+oiii_outflow = 0.332*f5007 * phi_out(wr,5007-47.932,745/c,1,1.3) + f5007 * phi_out(wr,5007,745/c,1.122,1.369)
 ```
+![image of predicted \[O III\] doublet profile](oiii_examp.png "[OIII]4959,5007 profile")
 
 ## Example Usage -- O VI P-Cygni Profile
 ```
@@ -83,6 +86,9 @@ absn = prod(list(map(lambda w0,f,A: \
           pcyg(wr,w0,f,A,16,vtrm/c,Cf,alph,beta),\
           rf['w'],rf['f'],rf['A'])),axis=0)
 ```
+![image of predicted O VI P Cygni profile](ovi_examp.png "O VI P Cygni profile")
+
+
 
 ## BibTex
 *pending*
