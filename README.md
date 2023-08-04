@@ -27,8 +27,8 @@ from OutLines import *
 # speed of light in km/s
 c    = 2.99792458e5
 # rest-frame wavelengths
-wr = arange(1020,1050,0.25)
-# predict line profiles for both [O III] transitions using Mrk 462 results
+wr = arange(4900,5050,0.25)
+# predict line profiles for both [O III] doublet transitions using Mrk 462 results
 oiii_outflow = 0.332*f5007 * phi_out(wr,5007-47.932,745/c,1,1.3) + f5007 * phi_out(wr,5007,745/c,1.122,1.369)
 ```
 ![image of predicted \[O III\] doublet profile](oiii_examp.png "[OIII]4959,5007 profile")
