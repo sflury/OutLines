@@ -21,7 +21,7 @@ implemented this script for Flury, Moran, & Eleazer (2023) MNRAS with
 example applications to the \[O III\] line in Mrk 462.
 
 ## Example Usage -- \[O III\] Profile for Mrk 462
-```
+``` python
 from numpy import arange
 from OutLines import *
 # speed of light in km/s
