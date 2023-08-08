@@ -33,6 +33,35 @@ oiii_outflow = 0.332*f5007 * phi_out(wr,5007-47.932,745/c,1,1.3) + f5007 * phi_o
 ```
 ![image of predicted \[O III\] doublet profile](oiii_examp.png "[OIII]4959,5007 profile")
 
+## Example Usage -- O VI P-Cygni Profile
+``` python
+from numpy import arange
+from OutLines import *
+# speed of light in km/s
+c    = 2.99792458e5
+# base 10 log of the classical cross-section
+log_sig = -14.8247 # cm^2 km s^-1 Ang^-1
+# user-defined values
+vinf  = 1000. # km s^-1
+alpha = 1
+beta  = 1
+N     = 21.5 # cm^-2
+# atomic data for O VI from Morton 2003
+rf = {'w':[1033.816,1037.6167,1031.9261],\
+      'f':[1.983E-01,6.580E-02,1.325E-01],\
+      'A':[4.125,4.076,4.149]}
+# rest-frame wavelengths
+wr = arange(1020,1050,0.25)
+# predict line profiles for all three O VI transitions
+absn = ones(len(wr))
+emsn = zeros(len(wr))
+for wave0,fosc,A in zip(rf['w'],rf['f'],rf['A']):
+    absn *= exp( -10**(N+log_sig)*(wave0*fosc)/(vinf*c) * \
+                    tau_out(wr,wave0,vinf/c,alpha,beta) )
+    emsn += phi_out(wr,wave0,vinf/c,alpha,beta)*A/10
+profile = absn + emsn
+```
+![image of predicted O VI P Cygni profile](ovi_examp.png "O VI P Cygni profile")
 
 ## BibTex
 *pending*
