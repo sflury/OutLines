@@ -64,7 +64,23 @@ profile = absn + emsn
 ![image of predicted O VI P Cygni profile](ovi_examp.png "O VI P Cygni profile")
 
 ## BibTex
-*pending*
+``` bibtex
+@ARTICLE{2023arXiv230804393F,
+       author = {{Flury}, Sophia R. and {Moran}, Edward C. and {Eleazer}, Miriam},
+        title = "{Galactic Outflow Emission Line Profiles: Evidence for Dusty, Radiatively-Driven Ionized Winds in Mrk 462}",
+      journal = {arXiv e-prints},
+     keywords = {Astrophysics - Astrophysics of Galaxies},
+         year = 2023,
+        month = aug,
+          eid = {arXiv:2308.04393},
+        pages = {arXiv:2308.04393},
+archivePrefix = {arXiv},
+       eprint = {2308.04393},
+ primaryClass = {astro-ph.GA},
+       adsurl = {https://ui.adsabs.harvard.edu/abs/2023arXiv230804393F},
+      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
+}
+```
 
 ## Licensing
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
