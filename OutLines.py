@@ -42,7 +42,7 @@ def tau_out(wave,wave0,vinf,alpha,beta):
     return tau1
 '''
 Name:
-    tau_out
+    phi_out
 
 Purpose:
     Calculate the nebular emission line profile for a galactic outflow
