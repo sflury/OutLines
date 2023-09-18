@@ -17,7 +17,7 @@ gas velcities contribute negligibly to the net velocity field.
 
 While this code is provided publicly, I request that any use thereof be 
 cited in any publications in which this code is used. I developed and 
-implemented this script for Flury, Moran, & Eleazer (2023) MNRAS with
+implemented this script for Flury, Moran, & Eleazer (2023) MNRAS 525, 4231 with
 example applications to the \[O III\] line in Mrk 462.
 
 ## Example Usage -- \[O III\] Profile for Mrk 462
@@ -68,21 +68,16 @@ profile = absn + emsn
 
 ## BibTex
 ``` bibtex
-@ARTICLE{2023arXiv230804393F,
+@ARTICLE{2023MNRAS.525.4231F,
        author = {{Flury}, Sophia R. and {Moran}, Edward C. and {Eleazer}, Miriam},
-        title = "{Galactic Outflow Emission Line Profiles: Evidence for Dusty, Radiatively-Driven Ionized Winds in Mrk 462}",
-      journal = {arXiv e-prints},
-     keywords = {Astrophysics - Astrophysics of Galaxies},
+        title = "{Galactic outflow emission line profiles: evidence for dusty, radiatively driven ionized winds in Mrk 462}",
+      journal = {\mnras},
          year = 2023,
-        month = aug,
-          eid = {arXiv:2308.04393},
-        pages = {arXiv:2308.04393},
-archivePrefix = {arXiv},
-       eprint = {2308.04393},
- primaryClass = {astro-ph.GA},
-       adsurl = {https://ui.adsabs.harvard.edu/abs/2023arXiv230804393F},
-      adsnote = {Provided by the SAO/NASA Astrophysics Data System}
-}
+        month = nov,
+       volume = {525},
+       number = {3},
+        pages = {4231-4242},
+          doi = {10.1093/mnras/stad2421} }
 ```
 
 ## Licensing
