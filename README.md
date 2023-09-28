@@ -20,7 +20,7 @@ cited in any publications in which this code is used. I developed and
 implemented this script for Flury, Moran, & Eleazer (2023) MNRAS 525, 4231 with
 example applications to the \[O III\] line in Mrk 462.
 
-## Example Usage -- \[O III\] Profile for Mrk 462
+## Example Usage -- \[O III\] 4959,5007 Profile for Mrk 462
 ``` python
 from numpy import arange
 from OutLines import *
@@ -36,6 +36,36 @@ oiii_outflow = 0.332*f5007 * phi_out(wr,5007-47.932,745/c,1,1.3) + \
 ```
 ![image of predicted \[O III\] doublet profile](oiii_examp.png "[OIII]4959,5007 profile")
 
+## Example Usage -- Si II 1260 Profile
+``` python
+from numpy import arange
+from OutLines import *
+from scipy.special import wofz
+# speed of light in km/s
+c    = 2.99792458e5
+# base 10 log of the classical cross-section
+log_sig = -14.8247 # cm^2 km s^-1 Ang^-1
+# atomic data from Morton 2003
+wave0 = 1260.4221
+fosc  = 1.18
+# user-defined values
+vinf  = 1000. # km s^-1 -> outflow velocity
+sigv  = 100.  # km s^-1 -> static gas velocity (galaxy rotation)
+alpha = 1
+beta  = 1
+N     = 15.0  # cm^-2
+f     = 0.10 # fraction of Si II column in static component
+# rest-frame wavelengths
+wr = arange(1250,1270,0.25)
+# optical depth for outflow
+absn_out = (wave0*fosc) * tau_out(wr,wave0,vinf/c,alpha,beta)/vinf
+# static Voigt profile optical depth
+absn_stc = wofz((wr-wave0)/(wave0 * sigv/c)).real*(wave0*fosc)/sigv
+# additively combine optical depths in exponent
+profile = exp(-10**(N+log_sig)*((1-f)*absn_out+f*absn_stc))
+```
+![image of predicted Si II 1260 absorption profile](si-ii_examp.png "Si II 1260 absorption profile")
+
 ## Example Usage -- O VI P-Cygni Profile
 ``` python
 from numpy import arange
@@ -48,7 +78,7 @@ log_sig = -14.8247 # cm^2 km s^-1 Ang^-1
 vinf  = 1000. # km s^-1
 alpha = 1
 beta  = 1
-N     = 21.5 # cm^-2
+N     = 16.0  # cm^-2
 # atomic data for O VI from Morton 2003
 rf = {'w':[1033.816,1037.6167,1031.9261],\
       'f':[1.983E-01,6.580E-02,1.325E-01],\
@@ -56,13 +86,12 @@ rf = {'w':[1033.816,1037.6167,1031.9261],\
 # rest-frame wavelengths
 wr = arange(1020,1050,0.25)
 # predict line profiles for all three O VI transitions
-absn = ones(len(wr))
+absn = zeros(len(wr))
 emsn = zeros(len(wr))
 for wave0,fosc,A in zip(rf['w'],rf['f'],rf['A']):
-    absn *= exp( -10**(N+log_sig)*(wave0*fosc)/(vinf*c) * \
-                    tau_out(wr,wave0,vinf/c,alpha,beta) )
+    absn += (wave0*fosc) * tau_out(wr,wave0,vinf/c,alpha,beta)/vinf
     emsn += phi_out(wr,wave0,vinf/c,alpha,beta)*A/10
-profile = absn + emsn
+profile = exp(-10**(N+log_sig)*absn) + emsn
 ```
 ![image of predicted O VI P Cygni profile](ovi_examp.png "O VI P Cygni profile")
 
