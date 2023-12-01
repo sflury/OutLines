@@ -1,5 +1,6 @@
 cff-version: 1.2.0
 title: "OutLines"
+type: software
 message: >-
   'If you use this software, please cite it using the metadata from this file.'
 authors:
