@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "OutLines"
+message: >-
+  'If you use this software, please cite it using the metadata from this file.'
+type: software
+authors:
+  - given-names: 'Sophia'
+    family-names: 'Flury'
+    orcid: 'https://orcid.org/0000-0002-0159-2613'
+  - given-names: 'Edward'
+    family-names: 'Moran'
+  - given-names: 'Miriam'
+    family-names: 'Eleazer'
+identifiers:
+  - type: doi
+    value: 10.1093/mnras/stad2421
+repository-code: 'https://github.com/sflury/OutLines'
+license: 'GPL-3.0-or-later'
