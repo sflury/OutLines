@@ -13,6 +13,6 @@ authors:
     family-names: Eleazer
 identifiers:
   - type: doi
-    value: 10.1093/mnras/stad2421
+    value: '10.1093/mnras/stad2421'
 repository-code: 'https://github.com/sflury/OutLines'
 license: GPL-3.0-or-later
