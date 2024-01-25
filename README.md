@@ -15,10 +15,12 @@ $$v \propto (1-r^{-1})^{\beta}$$
 under the Sobolev approximation that small-scale ("local")
 gas velcities contribute negligibly to the net velocity field.
 
-While this code is provided publicly, I request that any use thereof be 
-cited in any publications in which this code is used. I developed and 
-implemented this script for Flury, Moran, & Eleazer (2023) MNRAS 525, 4231 with
-example applications to the \[O III\] line in Mrk 462.
+Emission and absorption profiles are computed in velocity space for the
+specified wavelength(s). Each profile must be computed separately. Following
+the equation of radiative transfer, emission line profiles should be added 
+in flux space while absorption line profiles should be added in 
+optical depth space. The returned profiles for each type of line are
+intended to facilitate adding in these respective spaces.
 
 ## Example Usage -- \[O III\] 4959,5007 Profile for Mrk 462
 ``` python
@@ -95,7 +97,15 @@ profile = exp(-10**(N+log_sig)*absn) + emsn
 ```
 ![image of predicted O VI P Cygni profile](ovi_examp.png "O VI P Cygni profile")
 
-## BibTex
+## Referencing `OutLines`
+
+While this code is provided publicly, it did require quite a bit of effort to develop 
+and document. I request that any use thereof be cited in any publications in which 
+this code is used. I developed and implemented this script for 
+Flury, Moran, & Eleazer (2023) MNRAS 525, 4231 with example applications to the 
+\[O III\] line in Mrk 462. The BibTeX reference is below; however, a GitHub CCF
+is also provided for convenience.
+
 ``` bibtex
 @ARTICLE{2023MNRAS.525.4231F,
        author = {{Flury}, Sophia R. and {Moran}, Edward C. and {Eleazer}, Miriam},
