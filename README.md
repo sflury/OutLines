@@ -1,6 +1,6 @@
 # OutLines
 Computes spectral line profiles arising from galactic outflows following 
-formalism and examples in Flury, Moran, & Eleazer (2023) MNRAS while 
+formalism and examples in [Flury, Moran, & Eleazer (2023) MNRAS](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F) while 
 remaining agnostic to the underlying physics.
 Script currently supports nebular emission lines which do not undergo 
 self-absorption (and are therefore always optically thin, i.e. "pure" 
@@ -102,7 +102,8 @@ profile = exp(-10**(N+log_sig)*absn) + emsn
 While this code is provided publicly, it did require quite a bit of effort to develop 
 and document. I request that any use thereof be cited in any publications in which 
 this code is used. I developed and implemented this script for 
-Flury, Moran, & Eleazer (2023) MNRAS 525, 4231 with example applications to the 
+[Flury, Moran, & Eleazer (2023) MNRAS 525, 4231](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F) 
+with example applications to the 
 \[O III\] line in Mrk 462. The BibTeX reference is below; however, a GitHub CCF
 is also provided for convenience.
 
