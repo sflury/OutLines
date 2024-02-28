@@ -1,12 +1,18 @@
 # OutLines
 Computes spectral line profiles arising from galactic outflows following 
 formalism and examples in [Flury, Moran, & Eleazer (2023) MNRAS](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F) while 
-remaining agnostic to the underlying physics.
+remaining agnostic to the underlying physics. A cartoon of the model 
+illustrating the observation of spherical outflows is shown below,
+depecting the Doppler shift (colored arrows) of light emitted (yellow and 
+orange) and absorbed (orange) by gas in the outflow.
+
+<img width="256" alt="306284797-8d3e1897-8c2d-456d-8efe-a2ffa49d24c4" src="https://github.com/sflury/OutLines/assets/42982705/9af5bf13-d2ce-441b-b429-294833ae5edc">
+
 Script currently supports nebular emission lines which do not undergo 
 self-absorption (and are therefore always optically thin, i.e. "pure" 
 emission) and absorption lines without infilling effects (although line 
-infilling can be done manually to produce
-P-Cygni line profiles).
+infilling can be done manually to produce P-Cygni line profiles, as 
+demonstrated below).
 
 Physically justifiable assumptions include the density profile
 $$n \propto r^{-\alpha}$$
