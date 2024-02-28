@@ -6,7 +6,7 @@ illustrating the observation of spherical outflows is shown below,
 depecting the Doppler shift (colored arrows) of light emitted (yellow and 
 orange) and absorbed (orange) by gas in the outflow.
 
-<img width="256" alt="306284797-8d3e1897-8c2d-456d-8efe-a2ffa49d24c4" src="https://github.com/sflury/OutLines/assets/42982705/9af5bf13-d2ce-441b-b429-294833ae5edc">
+<img width="512" alt="306284797-8d3e1897-8c2d-456d-8efe-a2ffa49d24c4" src="https://github.com/sflury/OutLines/assets/42982705/9af5bf13-d2ce-441b-b429-294833ae5edc">
 
 Script currently supports nebular emission lines which do not undergo 
 self-absorption (and are therefore always optically thin, i.e. "pure" 
