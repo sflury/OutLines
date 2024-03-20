@@ -3,16 +3,16 @@ name = "OutLines"
 version = "0.0.1"
 authors = [{name = "Sophia Flury", email = "sflury@umass.edu"}]
 description = "Model spectral line profiles for galactic outflows"
-readme = "README.md"
+readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.7"
 classifiers = ["Programming Language :: Python :: 3",
                "Programming Language :: Python :: 3.7",
-               "License :: OSI Approved :: GPL-3.0 license",
+               "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
                "Operating System :: OS Independent",
 ]
 dependencies = ["numpy==1.24.3",
                 "scipy>=1.10.1", "python_version >= 3.7"]
-license = {file = "LICENSE", text = "GPL-3.0 license"}
+license = {file = "LICENSE"}
 [project.urls]
 Homepage      = "https://github.com/sflury/OutLines"
 Issues        = "https://github.com/sflury/OutLines/issues"
