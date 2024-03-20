@@ -6,7 +6,7 @@ illustrating the observation of spherical outflows is shown below,
 depecting the Doppler shift (colored arrows) of light emitted (yellow and 
 orange) and absorbed (orange) by gas in the outflow.
 
-<img width="512" alt="306284797-8d3e1897-8c2d-456d-8efe-a2ffa49d24c4" src="https://github.com/sflury/OutLines/assets/42982705/9af5bf13-d2ce-441b-b429-294833ae5edc">
+<img width="512" alt="image of a model outflow" src="https://github.com/sflury/OutLines/assets/42982705/9af5bf13-d2ce-441b-b429-294833ae5edc">
 
 Script currently supports nebular emission lines which do not undergo 
 self-absorption (and are therefore always optically thin, i.e. "pure" 
@@ -42,7 +42,7 @@ wr = arange(4900,5050,0.25)
 oiii_outflow = 0.332*f5007 * phi_out(wr,5007-47.932,745/c,1,1.3) + \
                      f5007 * phi_out(wr,5007,745/c,1.122,1.369)
 ```
-![image of predicted \[O III\] doublet profile](oiii_examp.png "[OIII]4959,5007 profile")
+<img width="480" alt="image of predicted \[O III\] doublet profile" src="https://github.com/sflury/OutLines/blob/main/examps/oiii_examp.png">
 
 ## Example Usage -- Si II 1260 Profile
 ``` python
@@ -72,7 +72,7 @@ absn_stc = wofz((wr-wave0)/(wave0 * sigv/c)).real*(wave0*fosc)/sigv
 # additively combine optical depths in exponent
 profile = exp(-10**(N+log_sig)*((1-f)*absn_out+f*absn_stc))
 ```
-![image of predicted Si II 1260 absorption profile](si-ii_examp.png "Si II 1260 absorption profile")
+<img width="480" alt="image of predicted Si II 1260 absorption profile" src="https://github.com/sflury/OutLines/blob/main/examps/si-ii_examp.png">
 
 ## Example Usage -- O VI P-Cygni Profile
 ``` python
@@ -101,7 +101,7 @@ for wave0,fosc,A in zip(rf['w'],rf['f'],rf['A']):
     emsn += phi_out(wr,wave0,vinf/c,alpha,beta)*A/10
 profile = exp(-10**(N+log_sig)*absn) + emsn
 ```
-![image of predicted O VI P Cygni profile](ovi_examp.png "O VI P Cygni profile")
+<img width="480" alt="image of predicted O VI P Cygni profile" src="https://github.com/sflury/OutLines/blob/main/examps/ovi_examp.png">
 
 ## Referencing `OutLines`
 
