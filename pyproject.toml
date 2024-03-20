@@ -11,9 +11,12 @@ classifiers = ["Programming Language :: Python :: 3",
                "Operating System :: OS Independent",
 ]
 dependencies = ["numpy==1.24.3",
-                "scipy>=1.10.1"; python_version >= '3.7']
+                "scipy>=1.10.1", "python_version >= 3.7"]
 license = {file = "LICENSE", text = "GPL-3.0 license"}
 [project.urls]
 Homepage      = "https://github.com/sflury/OutLines"
 Issues        = "https://github.com/sflury/OutLines/issues"
 Documentation = "https://github.com/sflury/OutLines/wiki"
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
