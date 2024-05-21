@@ -126,6 +126,10 @@ is also provided for convenience.
           doi = {10.1093/mnras/stad2421} }
 ```
 
+The Zenodo DOI is also available here:
+[![DOI](https://zenodo.org/badge/674711164.svg)](https://zenodo.org/doi/10.5281/zenodo.11238265)
+
+
 ## Licensing
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
