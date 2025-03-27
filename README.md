@@ -1,4 +1,8 @@
 # OutLines
+
+# NEW VERSION AND FULL RELEASE COMING SOON!!
+## Expected June/July 2025
+
 Computes spectral line profiles arising from galactic outflows following 
 formalism and examples in [Flury, Moran, & Eleazer (2023) MNRAS](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F) while 
 remaining agnostic to the underlying physics. A cartoon of the model 
