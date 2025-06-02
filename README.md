@@ -135,8 +135,8 @@ The Zenodo DOI is also available here:
 
 
 ## Licensing
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
+This publicly available software is licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+You may share this code freely under the following conditions:
++ attribution must be given (see referencing above)
++ this software may only be used for non-commercial purposes
++ modifications, expansions, or other alterations to this software may not be redistributed
