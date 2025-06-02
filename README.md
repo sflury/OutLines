@@ -139,7 +139,10 @@ The Zenodo DOI is also available here:
 
 <img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/nd.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;">
 
-You may share this code freely under the following conditions:
-+ attribution must be given (see referencing above)
-+ this software may only be used for non-commercial purposes
-+ modifications, expansions, or other alterations to this software may not be redistributed
+This license enables reusers to copy and distribute OutLines in any medium or format in unadapted form only, for noncommercial purposes only, and only so long as attribution is given to the creator. CC BY-NC-ND 4.0 includes the following elements:
+
+BY: credit must be given to the creator.
+NC: Only noncommercial uses of the work are permitted.
+ND: No derivatives or adaptations of the work are permitted.
+
+You should have received a copy of the CC BY-NC-ND 4.0 along with this program. If not, see <https://creativecommons.org/licenses/by-nc-nd/4.0/>.
