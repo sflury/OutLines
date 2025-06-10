@@ -1,4 +1,4 @@
-# OutLines
+<img width="512" alt="OutLines Logo" src="docs/logo.png">
 
 # NEW VERSION AND FULL RELEASE COMING SOON!!
 ## Expected June/July 2025
