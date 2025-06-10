@@ -1,9 +1,5 @@
 <img width="512" alt="OutLines Logo" src="https://github.com/sflury/OutLines/blob/main/docs/logo.png">
 
-## NEW VERSION AND FULL RELEASE COMING SOON!!
-
-## Expected June/July 2025
-
 OutLines models spectral line profiles from winds, bubbles, and
 outflows following the formalism in Flury 2025 (see
 [Flury, Moran, & Eleazer 2023](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F)
@@ -35,6 +31,16 @@ discouraged.
 
 OutLines currently supports line profile models for absorption lines and nebular
 emission lines.
+
+## Installation
+
+While the source code is accessible in this repository, installation of OutLines
+is most convenient via PyPI using pip install as in the command line example
+below.
+
+``` bash
+$ pip3 install OutLines
+```
 
 ## Example Usage -- \[O III\] 4959,5007 Profile
 ``` python
