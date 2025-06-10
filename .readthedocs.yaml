@@ -6,7 +6,7 @@ version: 2
 
 # Set the OS, Python version and other tools you might need
 build:
-  os: macOS-14.7.4
+  os: ubuntu-lts-latest
   tools:
     python: "3.11"
 
