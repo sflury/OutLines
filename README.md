@@ -1,121 +1,167 @@
-<img width="512" alt="OutLines Logo" src="docs/logo.png">
+<img width="512" alt="OutLines Logo" src="https://github.com/sflury/OutLines/blob/main/docs/logo.png">
 
-# NEW VERSION AND FULL RELEASE COMING SOON!!
-## Expected June/July 2025
-
-Computes spectral line profiles arising from galactic outflows following 
-formalism and examples in [Flury, Moran, & Eleazer (2023) MNRAS](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F) while 
-remaining agnostic to the underlying physics. A cartoon of the model 
+OutLines models spectral line profiles from winds, bubbles, and
+outflows following the formalism in Flury 2025 (see also
+[Flury, Moran, & Eleazer 2023](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F)
+for an earlier version). A primary goal of OutLines is to remain agnostic to the
+underlying physics while also drawing on physical motivations for the geometry,
+velocity, and gas density distributions. A cartoon of the model
 illustrating the observation of spherical outflows is shown below,
-depecting the Doppler shift (colored arrows) of light emitted (yellow and 
+depecting the Doppler shift (colored arrows) of light emitted (yellow and
 orange) and absorbed (orange) by gas in the outflow.
 
 <img width="512" alt="image of a model outflow" src="https://github.com/sflury/OutLines/assets/42982705/9af5bf13-d2ce-441b-b429-294833ae5edc">
 
-Script currently supports nebular emission lines which do not undergo 
-self-absorption (and are therefore always optically thin, i.e. "pure" 
-emission) and absorption lines without infilling effects (although line 
-infilling can be done manually to produce P-Cygni line profiles, as 
-demonstrated below).
-
-Physically justifiable assumptions include the density profile
-$$n \propto r^{-\alpha}$$
-and velocity profile (from approximations to CAK theory)
-$$v \propto (1-r^{-1})^{\beta}$$
-under the Sobolev approximation that small-scale ("local")
+Physically justifiable assumptions include the density profile, including a
+variety of continuous or shell-like gas density distributions,
+and the velocity field, including the so-called beta law from approximations
+to CAK theory (e.g., Castor et al. 1975, Barlow et al. 1977) and other power law
+solutions, under the Sobolev approximation that small-scale ("local")
 gas velcities contribute negligibly to the net velocity field.
 
 Emission and absorption profiles are computed in velocity space for the
-specified wavelength(s). Each profile must be computed separately. Following
-the equation of radiative transfer, emission line profiles should be added 
-in flux space while absorption line profiles should be added in 
-optical depth space. The returned profiles for each type of line are
-intended to facilitate adding in these respective spaces.
+specified wavelength(s). Following the equation of radiative transfer, emission
+line profiles should be added in flux space while absorption line profiles
+should be added in optical depth space. One or multiple lines can be computed
+for each set of outflow properties, which is highly recommended in the case of
+multiple features from the same species such as the \[O III\] doublet or Si II
+UV absorption features. However, simultaneous fitting of lines from different
+phases of the interstellar medium or even different ionization zones is
+cautioned as different phases may not share the same wind, bubble, or
+outflow properties.
 
-## Example Usage -- \[O III\] 4959,5007 Profile for Mrk 462
+OutLines currently supports line profile models for absorption lines and
+nebular, resonant, and fluorescent emission lines.
+
+## Installation
+
+While it is possible to download this repository, OutLines is readily accessible
+via `pip install`, which will automatically ensure the appropriate dependencies
+are also installed. An example call in the terminal command line is shown below.
+
+``` bash
+$ pip3 install SpecOutLines
+```
+
+## Line Profile Classes
+
+| CLASS       | LINE FEATURE         |
+|-------------|----------------------|
+| Absorption  | resonant absorption  |
+| Nebular     | nebular emission     |
+| Resonant    | resonant emission    |
+| Fluorescent | fluorescent emission |
+
+
+## Example Usage -- \[O III\] 4959,5007 Profiles
 ``` python
-from numpy import arange
-from OutLines import *
-# speed of light in km/s
-c    = 2.99792458e5
-# normalized [O III] 5007 flux
-f5007 = 1.
-# rest-frame wavelengths
-wr = arange(4900,5050,0.25)
-# predict line profiles for both [O III] doublet transitions using Mrk 462 results
-oiii_outflow = 0.332*f5007 * phi_out(wr,5007-47.932,745/c,1,1.3) + \
-                     f5007 * phi_out(wr,5007,745/c,1.122,1.369)
+import OutLines as OL
+from numpy import linspace
+import matplotlib.pyplot as plt
+model = OL.Nebular([4958.911,5006.843],Geometry='HollowCones',AddStatic=True,Disk=True)
+model.update_params(['TerminalVelocity'],[500,30,15,45])
+model.update_params(['OpeningAngle','CavityAngle','Inclination'],[500,30,15,45])
+model.update_params(['FluxOutflow1','FluxStatic1'],[1/2.98,1/2.98])
+wave = linspace(4950,5015,651)wave = linspace(4950,5015,651)
+plt.plot(wave,model.get_profile(wave),lw=2,color='C3')
+plt.plot(wave,model.get_outflow(wave),dashes=[3,3],lw=2,color='C3')
+plt.plot(wave,model.get_static(wave),':',lw=2,color='C3')
+plt.show()
+model.print_settings()
+model.print_params()
+props = OL.Properties(model)
+props.print_props()
 ```
 <img width="480" alt="image of predicted \[O III\] doublet profile" src="https://github.com/sflury/OutLines/blob/main/examps/oiii_examp.png">
 
+``` text
+----------------------------------
+|          MODEL SETTINGS          |
+----------------------------------
+|     Line   1     : 4958.911      |
+|     Line   2     : 5006.843      |
+|          Profile : Nebular       |
+|    VelocityField : BetaCAK       |
+|   DensityProfile : PowerLaw      |
+|         Geometry : HollowCones   |
+|  StaticComponent : Yes           |
+|         Aperture : No            |
+|             Disk : Yes           |
+----------------------------------
+ ----------------------------------
+|         MODEL PARAMETERS         |
+ ----------------------------------
+|     DopplerWidth :    8.994 km/s |
+| TerminalVelocity :  500.000 km/s |
+|    VelocityIndex :    1.000      |
+|      FluxStatic1 :    0.336      |
+|      FluxStatic2 :    1.000      |
+|     FluxOutflow1 :    0.336      |
+|     FluxOutflow2 :    1.000      |
+|      Inclination :   45.000°     |
+|     OpeningAngle :   30.000°     |
+|      CavityAngle :   15.000°     |
+|       DiskRadius :    2.000      |
+|    PowerLawIndex :    2.000      |
+ ----------------------------------
+ -------------------------------------------
+|             MODEL PROPERTIES              |
+ -------------------------------------------
+|        x.out :    1.500                   |
+|        v.out :  166.667  km s^-1          |
+|         Mdot :    1.057  Msun yr^-1       |
+|         pdot :    0.111  10^34 dyne       |
+|         Edot :    0.009  10^42 erg s^-1   |
+|        v.esc :    1.667                   |
+|     pdot.esc :    0.093                   |
+|     Edot.esc :    0.154                   |
+ -------------------------------------------
+| Mdot, pdot, Edot / R0^2 n0 [kpc^2 cm^-3]  |
+|  pdot.est, Edot.esc / v0 [100 km s^-1]    |
+ -------------------------------------------
+```
+
+
 ## Example Usage -- Si II 1260 Profile
 ``` python
-from numpy import arange
-from OutLines import *
-from scipy.special import wofz
-# speed of light in km/s
-c    = 2.99792458e5
-# base 10 log of the classical cross-section
-log_sig = -14.8247 # cm^2 km s^-1 Ang^-1
-# atomic data from Morton 2003
-wave0 = 1260.4221
-fosc  = 1.18
-# user-defined values
-vinf  = 1000. # km s^-1 -> outflow velocity
-sigv  = 100.  # km s^-1 -> static gas velocity (galaxy rotation)
-alpha = 1
-beta  = 1
-N     = 15.0  # cm^-2
-f     = 0.10 # fraction of Si II column in static component
-# rest-frame wavelengths
-wr = arange(1250,1270,0.25)
-# optical depth for outflow
-absn_out = (wave0*fosc) * tau_out(wr,wave0,vinf/c,alpha,beta)/vinf
-# static Voigt profile optical depth
-absn_stc = wofz((wr-wave0)/(wave0 * sigv/c)).real*(wave0*fosc)/sigv
-# additively combine optical depths in exponent
-profile = exp(-10**(N+log_sig)*((1-f)*absn_out+f*absn_stc))
+import OutLines as OL
+from numpy import linspace
+import matplotlib.pyplot as plt
+kwargs = dict(Geometry='FilledCones',DensityProfile='LogNormal',AddStatic=True)
+model = OL.Absorption(1260.4221,1.18,**kwargs)
+wave = linspace(1259.25,1260.75,1001)
+plt.plot(wave,model.get_profile(wave),lw=2,color='C3')
+plt.plot(wave,model.get_outflow(wave),dashes=[3,3],lw=2,color='C3')
+plt.plot(wave,model.get_static(wave),':',lw=2,color='C3')
+plt.show()
 ```
-<img width="480" alt="image of predicted Si II 1260 absorption profile" src="https://github.com/sflury/OutLines/blob/main/examps/si-ii_examp.png">
-
-## Example Usage -- O VI P-Cygni Profile
-``` python
-from numpy import arange
-from OutLines import *
-# speed of light in km/s
-c    = 2.99792458e5
-# base 10 log of the classical cross-section
-log_sig = -14.8247 # cm^2 km s^-1 Ang^-1
-# user-defined values
-vinf  = 1000. # km s^-1
-alpha = 1
-beta  = 1
-N     = 16.0  # cm^-2
-# atomic data for O VI from Morton 2003
-rf = {'w':[1033.816,1037.6167,1031.9261],\
-      'f':[1.983E-01,6.580E-02,1.325E-01],\
-      'A':[4.125,4.076,4.149]}
-# rest-frame wavelengths
-wr = arange(1020,1050,0.25)
-# predict line profiles for all three O VI transitions
-absn = zeros(len(wr))
-emsn = zeros(len(wr))
-for wave0,fosc,A in zip(rf['w'],rf['f'],rf['A']):
-    absn += (wave0*fosc) * tau_out(wr,wave0,vinf/c,alpha,beta)/vinf
-    emsn += phi_out(wr,wave0,vinf/c,alpha,beta)*A/10
-profile = exp(-10**(N+log_sig)*absn) + emsn
-```
-<img width="480" alt="image of predicted O VI P Cygni profile" src="https://github.com/sflury/OutLines/blob/main/examps/ovi_examp.png">
+<img width="480" alt="image of predicted Si II 1260 absorption profile" src="https://github.com/sflury/OutLines/blob/main/examps/si_ii.png">
 
 ## Referencing `OutLines`
 
-While this code is provided publicly, it did require quite a bit of effort to develop 
-and document. I request that any use thereof be cited in any publications in which 
-this code is used. I developed and implemented this script for 
-[Flury, Moran, & Eleazer (2023) MNRAS 525, 4231](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F) 
-with example applications to the 
-\[O III\] line in Mrk 462. The BibTeX reference is below; however, a GitHub CCF
+While this code is provided publicly, it did require substantial effort to
+develop and document. Any use thereof must be cited in any publications in which
+this code is used. The BibTeX reference is below; however, a GitHub CCF
 is also provided for convenience.
+
+``` bibtex
+@ARTICLE{,
+       author = {{Flury}, Sophia R.},
+        title = "{OutLines: Modeling Astrophysical Winds, Bubbles, and Outflows}",
+      journal = {\mnras},
+         year = 2025,
+        month = jun,
+       volume = {},
+       number = {},
+        pages = {},
+          doi = {} }
+```
+
+I developed and implemented the spherical geometry, power law
+density, CAK approximation model for analysis of broad [O III] lines
+observed in Mrk 462. That model was presented in
+[Flury, Moran, & Eleazer (2023) MNRAS 525, 4231](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F)
+The BibTeX reference is below.
 
 ``` bibtex
 @ARTICLE{2023MNRAS.525.4231F,
@@ -129,10 +175,6 @@ is also provided for convenience.
         pages = {4231-4242},
           doi = {10.1093/mnras/stad2421} }
 ```
-
-The Zenodo DOI is also available here:
-[![DOI](https://zenodo.org/badge/674711164.svg)](https://zenodo.org/doi/10.5281/zenodo.11238265)
-
 
 ## Licensing
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
