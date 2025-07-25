@@ -1,22 +1,23 @@
 [project]
-name = "OutLines"
-version = "0.0.1"
-authors = [{name = "Sophia Flury", email = "sflury@umass.edu"}]
-description = "Model spectral line profiles for galactic outflows"
+name = "SpecOutLines"
+version = "1.0.0"
+authors = [{name = "Sophia Flury"}]
+description = "model spectral line profiles for astrophysical winds, bubbles, and outflows"
 readme = {file = "README.md", content-type = "text/markdown"}
-requires-python = ">=3.7"
+requires-python = ">=3.12.9"
 classifiers = ["Programming Language :: Python :: 3",
-               "Programming Language :: Python :: 3.7",
-               "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+               "Programming Language :: Python :: 3.12",
                "Operating System :: OS Independent",
 ]
-dependencies = ["numpy==1.24.3",
-                "scipy>=1.10.1", "python_version >= 3.7"]
-license = {file = "LICENSE"}
+dependencies = ["numpy>=1.26.3",
+                "scipy>=1.14.1",
+                "matplotlib>=3.10.0"]
+license = "GPL-3.0"
+license-files = ["LICENSE"]
 [project.urls]
 Homepage      = "https://github.com/sflury/OutLines"
 Issues        = "https://github.com/sflury/OutLines/issues"
 Documentation = "https://github.com/sflury/OutLines/wiki"
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=77.0"]
 build-backend = "setuptools.build_meta"
