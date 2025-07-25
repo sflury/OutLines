@@ -72,7 +72,7 @@ model.print_params()
 props = OL.Properties(model)
 props.print_props()
 ```
-<img width="480" alt="image of predicted \[O III\] doublet profile" src="https://github.com/sflury/OutLines/blob/main/examps/oiii_examp.png">
+<img width="480" alt="image of predicted \[O III\] doublet profile" src="https://github.com/sflury/OutLines/blob/main/examps/o_iii.png">
 
 ``` text
 ----------------------------------
