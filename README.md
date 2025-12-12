@@ -141,8 +141,9 @@ plt.show()
 
 While this code is provided publicly, it did require substantial effort to
 develop and document. Any use thereof must be cited in any publications in which
-this code is used. The BibTeX reference is below; however, a GitHub CCF
-is also provided for convenience.
+this code is used. The BibTeX reference for the [Flury (2025)](https://arxiv.org/abs/2512.10650) paper which 
+presents the models and code is below; however, a GitHub CCF is also provided 
+for convenience.
 
 ``` bibtex
 @ARTICLE{Flury2025,
