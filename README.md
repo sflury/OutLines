@@ -145,16 +145,15 @@ this code is used. The BibTeX reference is below; however, a GitHub CCF
 is also provided for convenience.
 
 ``` bibtex
-@ARTICLE{,
+@ARTICLE{Flury2025,
        author = {{Flury}, Sophia R.},
         title = "{OutLines: Modeling Astrophysical Winds, Bubbles, and Outflows}",
-      journal = {\mnras},
-         year = 2025,
-        month = jun,
-       volume = {},
-       number = {},
-        pages = {},
-          doi = {} }
+      eprint={2512.10650},
+      archivePrefix={arXiv},
+      primaryClass={astro-ph.GA},
+      url={https://arxiv.org/abs/2512.10650}, 
+         year = {2025},
+        month = {dec} }
 ```
 
 I developed and implemented the spherical geometry, power law
@@ -164,7 +163,7 @@ observed in Mrk 462. That model was presented in
 The BibTeX reference is below.
 
 ``` bibtex
-@ARTICLE{2023MNRAS.525.4231F,
+@ARTICLE{Flury2023,
        author = {{Flury}, Sophia R. and {Moran}, Edward C. and {Eleazer}, Miriam},
         title = "{Galactic outflow emission line profiles: evidence for dusty, radiatively driven ionized winds in Mrk 462}",
       journal = {\mnras},
