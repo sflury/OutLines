@@ -17,6 +17,9 @@ def dens_pulsedamplin(u,beta,vini,VF,r,sigma,dx,x0):
     return dens_pulseslin(u,beta,vini,VF,sigma,dx,x0) * dens_exp(u,beta,vini,VF,r)
 def dens_pulsedamplog(u,beta,vini,VF,r,sigma,dx,x0):
     return dens_pulseslog(u,beta,vini,VF,sigma,dx,x0) * dens_exp(u,beta,vini,VF,r)
+def dens_dlogic(u,beta,vini,VF,k,x0):
+    expon = exp(-k*(x[VF](u,beta,vini)-x0))
+    return k*expon/(1+expon)**2
 def dens_shell(u,beta,vini,VF,xi,sigma):
     if hasattr(u,'__len__'):
         den = zeros(len(u))
@@ -87,12 +90,13 @@ def dxdw_vplaw(u,beta,vini):
 # normalized density and velocity profiles to scale emissivity
 global n,x,v
 n = {'PowerLaw':       dens_plaw,\
+     'PowerLaw2':      dens_dplaw,\
+     'Exponential':    dens_exp,\
+     'DerivLogistic':  dens_dlogic,\
      'LogNormal':      dens_lognorm,\
      'Normal':         dens_norm,\
      'Shell':          dens_shell,\
      'FRED':           dens_fred,\
-     'PowerLaw2':      dens_dplaw,\
-     'Exponential':    dens_exp,\
      'Pulses':         dens_pulseslin,\
      'DampedPulses':   dens_pulsedamplin,\
      'DampedPulsesLog':dens_pulsedamplog}
