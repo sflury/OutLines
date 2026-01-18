@@ -1,4 +1,4 @@
-from numpy import array,append,ones,zeros,absolute,where,max,min,sum,\
+from numpy import trapezoid,array,append,ones,zeros,absolute,where,max,min,sum,\
                     log,log10,exp,sqrt,cos,sin,arccos,pi,inf,nan,isnan,arange,nanmax
 from scipy.optimize import brentq
 from scipy.special import wofz
