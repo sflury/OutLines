@@ -1,8 +1,8 @@
 <img width="512" alt="OutLines Logo" src="https://github.com/sflury/OutLines/blob/main/docs/logo.png">
 
 OutLines models spectral line profiles from winds, bubbles, and
-outflows following the formalism in Flury 2025 (see also
-[Flury, Moran, & Eleazer 2023](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F)
+outflows following the formalism in [Flury 2025](https://ui.adsabs.harvard.edu/abs/2025arXiv251210650F/abstract) 
+(see also [Flury, Moran, & Eleazer 2023](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F)
 for an earlier version). A primary goal of OutLines is to remain agnostic to the
 underlying physics while also drawing on physical motivations for the geometry,
 velocity, and gas density distributions. A cartoon of the model
