@@ -1,5 +1,3 @@
-from scipy.integrate import fixed_quad
-from functools import partial
 from OutLines.__funcs__ import *
 # velocity integral limits
 def calc_limits(w,w0,vinf,vini,vapr,beta,VF,Inflow=False):

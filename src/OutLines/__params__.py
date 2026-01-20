@@ -22,6 +22,7 @@ DensName = {'PowerLaw':['PowerLawIndex'],\
                               'Inflection'],\
             'Normal':['Peak','Width'],\
             'LogNormal':['LogPeak','LogWidth'],\
+            'DerivLogistic':['Peak','GrowthRate'],\
             'Shell':['Location','Width'],\
             'FRED':['RiseRate','DecayRate','Peak'],\
             'Pulses':['PulseWidth','PulseInterval','PulsePhase'],\
@@ -49,6 +50,7 @@ DensLabs = {'PowerLaw':[r'$\alpha$'],\
             'PowerLaw2':[r'$\alpha_1$',r'$\alpha_2$',r'$x_1$'],\
             'Normal':[r'$x_1$',r'$\sigma_x$'],\
             'LogNormal':[r'$\log x_1$',r'$\log\sigma_x$'],\
+            'DerivLogistic':['$x_1$','$\alpha$'],\
             'Shell':[r'$x_1$',r'$\sigma_x$'],\
             'FRED':[r'$r_1$',r'$r_2$',r'$x_1$'],\
             'Pulses':['$\sigma_x$','$\Delta x$','$x_0$'],\
@@ -79,6 +81,7 @@ DensPars = {'PowerLaw':[2],\
             'PowerLaw2':[1,2,3],\
             'Normal':[3,1],\
             'LogNormal':[0.5,0.1],\
+            'DerivLogistic':[3,1],\
             'Shell':[3,1],\
             'FRED':[1,1,3],\
             'Pulses':[0.2,1,2],\
@@ -109,6 +112,7 @@ DensBounds = {'PowerLaw':[[0],[10]],\
             'PowerLaw2':[[0,0,1],[5,10,10]],\
             'Normal':[[1,0.01],[100,10]],\
             'LogNormal':[[0,0.01],[2,1]],\
+            'DerivLogistic':[[1,100],[0,10]],\
             'Shell':[[1,0.01],[100,10]],\
             'FRED':[[0.01,0.01,1],[100,100,100]],\
             'Pulses':[[0,0,0],[1,3,10]],\

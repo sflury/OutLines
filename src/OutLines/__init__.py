@@ -3,11 +3,11 @@ name:
     OutLines
 dependencies:
     python     3.12.9
-    numpy      1.26.3
+    numpy      2.3.5
     scipy      1.14.1
     matplotlib 3.10.0
 author:
-    Sophia Flury 2025.07.07
+    Sophia Flury 2026.01.20
 '''
 # OutLines functions
 import OutLines.__absorption__
@@ -29,7 +29,7 @@ OutLines.PlotConeProjection  = OutLines.__visualize__.PlotConeProjection
 OutLines.PlotIsoContours     = OutLines.__visualize__.PlotIsoContours
 # quote from Shelly's "Ode to the West Wind"
 def Quote():
-    print('\nWild Spirit, which are moving everywhere;\n'+\
+    print('\nWild Spirit, which art moving everywhere;\n'+\
           'Destroyer and preserver\n'+
           'on whose stream, mid the steep sky\'s commotion,\n'+
           'Loose clouds Shook from the tangled boughs of Heaven.\n'+\

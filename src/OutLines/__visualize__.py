@@ -1,5 +1,4 @@
 from OutLines.__funcs__ import *
-from numpy import linspace, isnan, isfinite,  argmax, nan, arcsin, arccos, sign
 import matplotlib.pyplot as plt
 from matplotlib.patches import Arc,Rectangle
 from matplotlib import rcParams

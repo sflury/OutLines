@@ -1,12 +1,9 @@
 from OutLines import __nebular__,__absorption__,__resonfluor__
 from OutLines.__funcs__ import *
 from OutLines.__params__ import *
-from functools import partial
 # numpy functions for some basics
-from numpy import array,exp,log,pi,inf,interp,argmin,nansum,isfinite,where,isnan
 from numpy.random import randn
 import sys
-from scipy.integrate import cumulative_trapezoid
 # wrapper to apply meta Profile object class to specific line profile cases
 # with generalized methods and attributes
 def profile_constructor(ProfileSubClass):

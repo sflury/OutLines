@@ -1,7 +1,11 @@
-from numpy import trapezoid,array,append,ones,zeros,absolute,where,max,min,sum,\
-                    log,log10,exp,sqrt,cos,sin,arccos,pi,inf,nan,isnan,arange,nanmax
-from scipy.optimize import brentq
+from numpy import array,append,ones,zeros,absolute,where,max,min,sum,\
+                    log,log10,exp,sqrt,cos,sin,arccos,arcsin,pi,inf,nan,isnan,\
+                    isfinite,sign,arange,linspace,logspace,argmin,nanmin,\
+                    argmax,nanmax,interp,diff,quantile,nanquantile
+from scipy.optimize import brentq,newton,fminbound
+from scipy.integrate import trapezoid,simpson,fixed_quad,cumulative_trapezoid
 from scipy.special import wofz
+from functools import partial
 # possible density profiles
 def dens_plaw(u,beta,vini,VF,alpha):
     return x[VF](u,beta,vini)**-alpha
@@ -17,6 +21,9 @@ def dens_pulsedamplin(u,beta,vini,VF,r,sigma,dx,x0):
     return dens_pulseslin(u,beta,vini,VF,sigma,dx,x0) * dens_exp(u,beta,vini,VF,r)
 def dens_pulsedamplog(u,beta,vini,VF,r,sigma,dx,x0):
     return dens_pulseslog(u,beta,vini,VF,sigma,dx,x0) * dens_exp(u,beta,vini,VF,r)
+def dens_dlogic(u,beta,vini,VF,k,x0):
+    expon = exp(-k*(x[VF](u,beta,vini)-x0))
+    return k*expon/(1+expon)**2
 def dens_shell(u,beta,vini,VF,xi,sigma):
     if hasattr(u,'__len__'):
         den = zeros(len(u))
@@ -87,12 +94,13 @@ def dxdw_vplaw(u,beta,vini):
 # normalized density and velocity profiles to scale emissivity
 global n,x,v
 n = {'PowerLaw':       dens_plaw,\
+     'PowerLaw2':      dens_dplaw,\
+     'Exponential':    dens_exp,\
+     'DerivLogistic':  dens_dlogic,\
      'LogNormal':      dens_lognorm,\
      'Normal':         dens_norm,\
      'Shell':          dens_shell,\
      'FRED':           dens_fred,\
-     'PowerLaw2':      dens_dplaw,\
-     'Exponential':    dens_exp,\
      'Pulses':         dens_pulseslin,\
      'DampedPulses':   dens_pulsedamplin,\
      'DampedPulsesLog':dens_pulsedamplog}
