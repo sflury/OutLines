@@ -9,8 +9,8 @@ classifiers = ["Programming Language :: Python :: 3",
                "Programming Language :: Python :: 3.12",
                "Operating System :: OS Independent",
 ]
-dependencies = ["numpy>=1.26.3",
-                "scipy>=1.14.1",
+dependencies = ["numpy>=2.4.1",
+                "scipy>=1.17.0",
                 "matplotlib>=3.10.0"]
 license = "GPL-3.0"
 license-files = ["LICENSE"]
