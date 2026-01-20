@@ -1,6 +1,6 @@
 [project]
 name = "SpecOutLines"
-version = "1.0.0"
+version = "1.0.1"
 authors = [{name = "Sophia Flury"}]
 description = "model spectral line profiles for astrophysical winds, bubbles, and outflows"
 readme = {file = "README.md", content-type = "text/markdown"}
