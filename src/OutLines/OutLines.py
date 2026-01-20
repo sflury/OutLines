@@ -1,4 +1,4 @@
-from numpy import trapz,log,log10,exp,sqrt,array,append,ones,zeros,absolute
+from numpy import trapezoid,log,log10,exp,sqrt,array,append,ones,zeros,absolute
 from scipy.integrate import romberg
 from scipy.optimize import brentq
 '''
@@ -82,5 +82,5 @@ def phi_out(w,w0,vinf,alpha,beta):
     phi[y<1] = array( list( map(
         lambda u1: romberg(lambda u: n(u)**2,u1,umax),umin) ) )
     # normalize
-    norm = trapz(phi,x=w)
+    norm = trapezoid(phi,x=w)
     return phi/norm

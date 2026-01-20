@@ -1,4 +1,4 @@
-from numpy import array,interp,trapz,log,log10,pi,logspace,argmax
+from numpy import trapezoid,array,interp,log,log10,pi,logspace,argmax
 from scipy.optimize import brentq,fminbound
 from scipy.integrate import fixed_quad
 from OutLines.__funcs__ import *

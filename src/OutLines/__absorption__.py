@@ -124,63 +124,63 @@ def build_profile_model(VelocityField='BetaCAK',DensityProfile='PowerLaw',Geomet
             if Aperture :
                 def profile(w,w0,vinf,beta,vapr,*par):
                     phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,0,vapr,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             else:
                 def profile(w,w0,vinf,beta,*par):
                     phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,0,1,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
         elif 'filled' in Geometry.lower():
             if Aperture and Disk :
                 def profile(w,w0,vinf,beta,incl,tO,xdisk,vapr,*par):
                     phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,0,vapr,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             elif Disk and not Aperture :
                 def profile(w,w0,vinf,beta,incl,tO,xdisk,*par):
                     phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,0,1,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             elif Aperture and not Disk :
                 def profile(w,w0,vinf,beta,incl,tO,vapr,*par):
                     phi = calc_phi(w,w0,vinf,incl,tO,0,0,0,vapr,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             else:
                 def profile(w,w0,vinf,beta,incl,tO,*par):
                     phi = calc_phi(w,w0,vinf,beta,incl,tO,0,0,0,1,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
         elif 'hollow' in Geometry.lower() or 'cavity' in Geometry.lower() or 'open' in Geometry.lower():
             if 'fix' in Geometry.lower():
                 if Aperture and Disk :
                     def profile(w,w0,vinf,beta,incl,tO,xdisk,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,0,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Disk and not Aperture :
                     def profile(w,w0,vinf,beta,incl,tO,xdisk,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,0,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Aperture and not Disk :
                     def profile(w,w0,vinf,beta,incl,tO,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,0,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 else:
                     def profile(w,w0,vinf,beta,incl,tO,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,0,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
             else:
                 if Aperture and Disk :
                     def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,0,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Disk and not Aperture :
                     def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,0,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Aperture and not Disk :
                     def profile(w,w0,vinf,beta,incl,tO,tC,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,0,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 else:
                     def profile(w,w0,vinf,beta,incl,tO,tC,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,0,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
         else:
             print('Geometry not recognized. Options are \'Sphere\',\n'+
                 '\'FilledCones\', \'HollowCones\', or \'HollowConesFixedCavity\'.')
@@ -189,63 +189,63 @@ def build_profile_model(VelocityField='BetaCAK',DensityProfile='PowerLaw',Geomet
             if Aperture :
                 def profile(w,w0,vinf,beta,vini,vapr,*par):
                     phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,vini,vapr,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             else:
                 def profile(w,w0,vinf,beta,vini,*par):
                     phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,vini,1,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
         elif 'filled' in Geometry.lower():
             if Aperture and Disk :
                 def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,vapr,*par):
                     phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,vini,vapr,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             elif Disk and not Aperture :
                 def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,*par):
                     phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,vini,1,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             elif Aperture and not Disk :
                 def profile(w,w0,vinf,beta,incl,tO,vini,vapr,*par):
                     phi = calc_phi(w,w0,vinf,incl,tO,0,0,vini,vapr,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
             else:
                 def profile(w,w0,vinf,beta,incl,tO,vini,*par):
                     phi = calc_phi(w,w0,vinf,beta,incl,tO,0,0,vini,1,*par,**kwargs)
-                    return phi/trapz(phi,x=w)
+                    return phi/trapezoid(phi,x=w)
         elif 'hollow' in Geometry.lower() or 'cavity' in Geometry.lower() or 'open' in Geometry.lower():
             if 'fix' in Geometry.lower():
                 if Aperture and Disk :
                     def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,vini,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Disk and not Aperture :
                     def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,vini,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Aperture and not Disk :
                     def profile(w,w0,vinf,beta,incl,tO,vini,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,vini,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 else:
                     def profile(w,w0,vinf,beta,incl,tO,vini,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,vini,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
             else:
                 if Aperture and Disk :
                     def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Disk and not Aperture :
                     def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 elif Aperture and not Disk :
                     def profile(w,w0,vinf,beta,incl,tO,tC,vini,vapr,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,vini,vapr,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
                 else:
                     def profile(w,w0,vinf,beta,incl,tO,tC,vini,*par):
                         phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,vini,1,*par,**kwargs)
-                        return phi/trapz(phi,x=w)
+                        return phi/trapezoid(phi,x=w)
         else:
             print('Geometry not recognized. Options are \'Sphere\',\n'+
                 '\'FilledCones\', \'HollowCones\', or \'HollowConesFixedCavity\'.')
