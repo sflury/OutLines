@@ -1,7 +1,10 @@
-from numpy import array,append,ones,zeros,absolute,where,max,min,sum,\
+from numpy import array,append,ones,zeros,absolute,where,max,min,sum,nansum,\
                     log,log10,exp,sqrt,cos,sin,arccos,arcsin,pi,inf,nan,isnan,\
                     isfinite,sign,arange,linspace,logspace,argmin,nanmin,\
-                    argmax,nanmax,interp,diff,quantile,nanquantile
+                    argmax,nanmax,interp,diff,quantile,nanquantile,count_nonzero
+from numpy.random import seed,default_rng
+global uniform_sampler
+uniform_sampler = default_rng().random
 from scipy.optimize import brentq,newton,fminbound
 from scipy.integrate import trapezoid,simpson,fixed_quad,cumulative_trapezoid
 from scipy.special import wofz
@@ -152,6 +155,14 @@ def solve_u1(ya,beta,vini,VF,yi):
     # if not, field is close to aperture so integration stops at aperture
     else:
         return ya
+# monte carlo integrator, default n_samp=10^4 gives 1% error since E~sqrt(N)
+def int_mc(func,w0,w1,n_samp=1e4):
+    fun_mx = brentq(lambda w: -func(w),w0,w1,maxiter=100)
+    w_mc   = uniform_sampler(n_samp)*(w1-w0)+w0
+    fun_mc = uniform_sampler(n_samp)*(f_mx+2**-24)
+    mc_rng = (w1-w0)*f_mx
+    n_incl = count_nonzero(f_mc<=func(w_mc))
+    return mc_rng*incl/n_samp
 # pre-calculate geometry terms which do not depend on velocity
 # to speed up the integral
 def precalc_geometry(incl,tO,tC,vdisk):
