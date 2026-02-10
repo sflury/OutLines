@@ -7,7 +7,7 @@ dependencies:
     scipy      1.14.1
     matplotlib 3.10.0
 author:
-    Sophia Flury 2026.01.20
+    Sophia Flury 2026.02.09
 '''
 # OutLines functions
 import OutLines.__absorption__

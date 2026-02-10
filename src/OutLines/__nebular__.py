@@ -5,7 +5,7 @@ def calc_limits(w,w0,vinf,vini,vapr,beta,VF,Inflow=False):
     if not hasattr(w,'__len__'):
         w = array([w])
     # observed velocity from wavelengths, in vinf/c units
-    y = absolute(w-w0)/w0 / vinf
+    y = absolute(((w/w0)**2-1)/((w/w0)**2+1)) / vinf
     ind = where(y<1)[0]
     # u = v/vinf (not y since y here is used for vobs/v)
     # with no occultation, the minimum velocity is just the observed velocity
@@ -30,17 +30,34 @@ def calc_limits(w,w0,vinf,vini,vapr,beta,VF,Inflow=False):
         umin[umin<vini/vinf] = vini/vinf
     return umin,umax,cone
 # nebular emission
-def nebular(w,u,beta,vini,geo,cone,par,VF,DP):
-    if geo[1] == 1. :
-        return n[DP](w,beta,vini,VF,*par)**2
+def nebular(w,u,vinf,beta,vini,geo,cone,par,VF,DP):
+    omega  = vinf*w                                    # relative velocity
+    Lrnzt1 = sqrt(1-omega**2)                          # Lorenzt factor
+    DopRel = square(1-omega)*sqrt((1+omega)/(1-omega)) # relative Doppler shift
+    dTheta = Lrnzt1/(omega*DopRel)                     # total polar term
+    # azimuthal geometry
+    # sphere
+    if geo[1] >= 1-2**-20 and geo[8] <= 2**-20 :
+        ell = 1
+    # hemisphere
+    elif geo[1] >= 1-2**-20 and geo[8] >= 1-2**-20 :
+        ell = array(list(map(partial(hemi_inscr,u,vinf,*geo[6:11],cone),w)))
+    # cones
+    elif geo[1] < 1-2**-20 and geo[8] < 2**-20 :
+        ell  = array(list(map(partial(cone_inscr,u,vinf,*geo[:11],cone),w)))
+        # cavity in cone
+        if geo[12] > 0. :
+            ell -= array(list(map(partial(cone_inscr,u,vinf,*geo[11:],cone),w)))
+    # cones with disk
     else:
-        ell  = array(list(map(partial(cone_inscr,u,*geo[:11],cone),w)))
-    if geo[12] > 0. :
-        ell -= array(list(map(partial(cone_inscr,u,*geo[11:],cone),w)))
-    ell = nanmax([ell,zeros(256)],axis=0)
-    return ell*n[DP](w,beta,vini,VF,*par)**2
+        ell  = array(list(map(partial(cndk_inscr,u,vinf,*geo[:11],cone),w)))
+        # cavity in cone
+        if geo[12] > 0. :
+            ell -= array(list(map(partial(cndk_inscr,u,vinf,*geo[11:],cone),w)))
+        ell = nanmax([ell,zeros(len(w))],axis=0)
+    return ell*n[DP](w,beta,vini,VF,*par)**2 * dTheta
 # integral over emissivities for range of allowed velocities
-def phi_int(beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
+def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
     # if cone projection excludes some velocities, then limit the integral
     if incl+tO < pi/2 :
         umax = min([umax,u/cos(incl+tO)])
@@ -54,21 +71,23 @@ def phi_int(beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         # set up geometry terms that do not depend on velocity
         geo = precalc_geometry(incl,tO,tC,vdisk)
         # return the integral
-        return fixed_quad(nebular,umin,umax,args=(u,beta,vini,geo,cone,par,VF,DP),n=256)[0]
+        args = (u,vinf,beta,vini,geo,cone,par,VF,DP)
+        return fixed_quad(nebular,umin,umax,args=args,n=1024)[0]
 # calculate unnormalized profile for a sphere or bicone
-def calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Geometry='Sphere'):
+def calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
     # obtain velocity limits for integral
     umin,umax,cone = calc_limits(w,w0,vinf,vini,vapr,beta,VF)
-    u = absolute(w-w0)/w0 / vinf
+    # line of sight velocity with relativistic corrections
+    u = absolute(((w/w0)**2-1)/((w/w0)**2+1)) / vinf
     # check disk radius and convert to velocity
     if xdisk <= 1 :
-        vdisk = 2**-10
+        vdisk = 2**-20
     else:
-        vdisk = max([v[VF](xdisk,beta,vini),2**-10])
+        vdisk = max([v[VF](xdisk,beta,vini),2**-20])
     # profile integrated at each velocity
     phi = zeros(len(w))
     phi[ u < 1 ] = array( list( map( \
-            partial(phi_int,beta,incl,tO,tC,vdisk,vini,par,VF,DP),\
+            partial(phi_int,vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP),\
             u[ u < 1 ], umin, umax, cone ) ) )
     return phi
 
@@ -117,75 +136,93 @@ Returns:
                         galactic outflow for the user-provided model settings
 
 '''
-def build_profile_model(VelocityField='BetaCAK',DensityProfile='PowerLaw',Geometry='Sphere',Aperture=False,Disk=False,FromRest=True):
-    kwargs = dict(VF=VelocityField,DP=DensityProfile)
+def build_profile_model(VelocityField='BetaCAK',DensityProfile='PowerLaw',Geometry='Sphere',Pulse='Normal',Aperture=False,Disk=False,FromRest=True):
+    kwargs = dict(VF=VelocityField,DP=DensityProfile,Pulse=Pulse)
     if FromRest:
-        if 'spher' in Geometry.lower():
+        if 'spher' in Geometry.lower() and 'hemi' in Geometry.lower():
+            if Aperture :
+                def profile(w,w0,vinf,beta,incl,vapr,*par):
+                    phi = calc_phi(w,w0,vinf,beta,incl,pi/2,0,inf,1e-5,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,beta,incl,*par):
+                    phi = calc_phi(w,w0,vinf,beta,incl,pi/2,0,inf,1e-5,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        elif 'spher' in Geometry.lower() and 'hemi' not in Geometry.lower():
             if Aperture :
                 def profile(w,w0,vinf,beta,vapr,*par):
-                    phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,0,vapr,*par,**kwargs)
+                    phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,1e-5,vapr,*par,**kwargs)
                     return phi/trapezoid(phi,x=w)
             else:
                 def profile(w,w0,vinf,beta,*par):
-                    phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,0,1,*par,**kwargs)
+                    phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,1e-5,1,*par,**kwargs)
                     return phi/trapezoid(phi,x=w)
         elif 'filled' in Geometry.lower():
             if Aperture and Disk :
                 def profile(w,w0,vinf,beta,incl,tO,xdisk,vapr,*par):
-                    phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,0,vapr,*par,**kwargs)
+                    phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,1e-5,vapr,*par,**kwargs)
                     return phi/trapezoid(phi,x=w)
             elif Disk and not Aperture :
                 def profile(w,w0,vinf,beta,incl,tO,xdisk,*par):
-                    phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,0,1,*par,**kwargs)
+                    phi = calc_phi(w,w0,vinf,beta,incl,tO,0,xdisk,1e-5,1,*par,**kwargs)
                     return phi/trapezoid(phi,x=w)
             elif Aperture and not Disk :
                 def profile(w,w0,vinf,beta,incl,tO,vapr,*par):
-                    phi = calc_phi(w,w0,vinf,incl,tO,0,0,0,vapr,*par,**kwargs)
+                    phi = calc_phi(w,w0,vinf,incl,tO,0,0,1e-5,vapr,*par,**kwargs)
                     return phi/trapezoid(phi,x=w)
             else:
                 def profile(w,w0,vinf,beta,incl,tO,*par):
-                    phi = calc_phi(w,w0,vinf,beta,incl,tO,0,0,0,1,*par,**kwargs)
+                    phi = calc_phi(w,w0,vinf,beta,incl,tO,0,0,1e-5,1,*par,**kwargs)
                     return phi/trapezoid(phi,x=w)
         elif 'hollow' in Geometry.lower() or 'cavity' in Geometry.lower() or 'open' in Geometry.lower():
             if 'fix' in Geometry.lower():
                 if Aperture and Disk :
                     def profile(w,w0,vinf,beta,incl,tO,xdisk,vapr,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,0,vapr,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,1e-5,vapr,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
                 elif Disk and not Aperture :
                     def profile(w,w0,vinf,beta,incl,tO,xdisk,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,0,1,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,xdisk,1e-5,1,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
                 elif Aperture and not Disk :
                     def profile(w,w0,vinf,beta,incl,tO,vapr,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,0,vapr,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,1e-5,vapr,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
                 else:
                     def profile(w,w0,vinf,beta,incl,tO,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,0,1,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tO-0.174533,0,1e-5,1,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
             else:
                 if Aperture and Disk :
                     def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,vapr,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,0,vapr,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,1e-5,vapr,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
                 elif Disk and not Aperture :
                     def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,0,1,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,xdisk,1e-5,1,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
                 elif Aperture and not Disk :
                     def profile(w,w0,vinf,beta,incl,tO,tC,vapr,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,0,vapr,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,1e-5,vapr,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
                 else:
                     def profile(w,w0,vinf,beta,incl,tO,tC,*par):
-                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,0,1,*par,**kwargs)
+                        phi = calc_phi(w,w0,vinf,beta,incl,tO,tC,0,1e-5,1,*par,**kwargs)
                         return phi/trapezoid(phi,x=w)
         else:
             print('Geometry not recognized. Options are \'Sphere\',\n'+
                 '\'FilledCones\', \'HollowCones\', or \'HollowConesFixedCavity\'.')
     else:
-        if 'spher' in Geometry.lower():
+        if 'spher' in Geometry.lower() and 'hemi' in Geometry.lower():
+            if Aperture :
+                def profile(w,w0,vinf,beta,incl,vini,vapr,*par):
+                    phi = calc_phi(w,w0,vinf,beta,incl,pi/2,0,inf,vini,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,incl,beta,vini,*par):
+                    phi = calc_phi(w,w0,vinf,beta,incl,pi/2,0,inf,vini,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        elif 'spher' in Geometry.lower() and 'hemi' not in Geometry.lower():
             if Aperture :
                 def profile(w,w0,vinf,beta,vini,vapr,*par):
                     phi = calc_phi(w,w0,vinf,beta,0,pi/2,0,0,vini,vapr,*par,**kwargs)
