@@ -110,9 +110,9 @@ def profile_constructor(ProfileSubClass):
                     flux, and flux uncertainties
             :log_probability: returns the log probability of the parameters
                     given the data; sums the log prior and the log likelihood;
-                    can be passed to MCMC codes like \`emcee\`
+                    can be passed to MCMC codes like \'emcee\'
         '''
-        def __init__(self,*args,VelocityField='BetaCAK',DensityProfile='PowerLaw',\
+        def __init__(self,*args,VelocityField='BetaCAK',DensityProfile='PowerLaw',Pulse='Normal',\
                     Geometry='Spherical',AddStatic=False,Disk=False,Aperture=False,FromRest=True):
 
             # keyword arguments specifying the model
@@ -125,7 +125,8 @@ def profile_constructor(ProfileSubClass):
                              'Aperture':Aperture,\
                              'Disk':Disk
                              }
-
+            if 'Pulse' in self.settings['DensityProfile'] :
+                self.settings['Pulse'] = Pulse
             # inheret the wind
             super(Profile,self).__init__(*args)
 
@@ -378,15 +379,15 @@ def profile_constructor(ProfileSubClass):
             print(3*' '+36*'-')
         # convenience function for printing parameters to terminal
         def print_params(self):
-            print(3*' '+36*'-'+'\n  |'+10*' '+'MODEL PARAMETERS'+10*' '+'|\n'+3*' '+36*'-')
+            print(3*' '+38*'-'+'\n  |'+11*' '+'MODEL PARAMETERS'+11*' '+'|\n'+3*' '+38*'-')
             for param,value in iter(self.params.items()):
-                if 'Terminal' in param or 'Doppler' in param or 'Aperture' in param:
-                    print(f'  | {param: >18s} : {value*2.99792458e5: >8.3f} km/s |')
+                if 'Terminal' in param or 'Launch' in param or 'Doppler' in param or 'Aperture' in param :
+                    print(f'  | {param: >18s} : {value*2.99792458e5: >10.3f} km/s |')
                 elif 'Inclination' in param or 'Angle' in param:
-                    print(f'  | {param: >18s} : {value*180/pi: >8.3f}°     |')
+                    print(f'  | {param: >18s} : {value*180/pi: >10.3f}°     |')
                 else:
-                    print(f'  | {param: >18s} : {value: >8.3f}      |')
-            print(3*' '+36*'-')
+                    print(f'  | {param: >18s} : {value: >10.3f}      |')
+            print(3*' '+38*'-')
         # convenience function for printing parameter bounds to terminal
         def print_bounds(self):
             delim = [',','|']
@@ -394,7 +395,7 @@ def profile_constructor(ProfileSubClass):
             for param,bound in iter(self.bounds.items()):
                 line = f'  | {param: >18s} : '
                 for l in [0,1]:
-                    if 'Terminal' in param or 'Doppler' in param or 'Aperture' in param:
+                    if 'Terminal' in param or 'Launch' in param or 'Doppler' in param or 'Aperture' in param :
                         line += f'{bound[l]*2.99792458e5: >13.3f} km/s {delim[l]}'
                     elif 'Inclination' in param or 'Angle' in param:
                         line += f'{bound[l]*180/pi: >13.3f}°     {delim[l]}'
@@ -403,11 +404,12 @@ def profile_constructor(ProfileSubClass):
                 print(line)
             print(3*' '+61*'-')
         # compute velocity quantiles
-        def velocity_quantiles(self,quantiles=array([0.1,0.9]),verbose=True):
+        def velocity_quantiles(self,quantiles=array([0.16,0.84]),verbose=True):
             uscl = 101
             uarr = array(list(map(lambda i: float(i)/uscl,range(-uscl,uscl+1,1))))
-            wave = self.w0[0] * (1+uarr*self.params['TerminalVelocity'])
-            vels = uarr*2.99792458e5*self.params['TerminalVelocity']
+            psi  = uarr*self.params['TerminalVelocity'] # psi = u * vterm/c
+            wave = self.w0[0] * sqrt( (1+psi) / (1-psi) ) # longitudinal D-shift
+            vels = psi*2.99792458e5 # convert from c units to km / s
             if self.settings['Profile'] != 'Absorption' :
                 cdf  = cumulative_trapezoid(self.get_profile(wave),x=wave)
             elif self.settings['Profile'] == 'Absorption' :

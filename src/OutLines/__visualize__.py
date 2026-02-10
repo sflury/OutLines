@@ -39,11 +39,11 @@ Attributes:
     :ax  (*matplotlib.pyplot.axis*): axis instance
 '''
 class PlotIsoContours(object):
-    def __init__(self,VelocityIndex=1,VelocityField='BetaCAK'):
-        fig,ax = self.isovel(beta=VelocityIndex,VelocityField=VelocityField)
+    def __init__(self,VelocityIndex=1,VelocityField='BetaCAK',V0=0,VT=1):
+        fig,ax = self.isovel(beta=VelocityIndex,VelocityField=VelocityField,V0=V0)
         self.fig = fig
         self.ax  = ax
-    def isovel(self,beta=1,VelocityField='BetaCAK'):
+    def isovel(self,beta=1,VelocityField='BetaCAK',V0=0):
         rscl = 10
         figure,axis = plt.subplots(1,1)
         axis.annotate('',xy=(1.02,0),xytext=(1/rscl-0.01,0),arrowprops={'arrowstyle':'->'},zorder=4)
@@ -59,16 +59,16 @@ class PlotIsoContours(object):
         for u,color in zip([-0.5,-0.3,-0.1,0.1,0.3,0.5],['C3','C5','C1','C2','C4','C0']):
             if hasattr(beta,'__len__'):
                 for b,ls in zip(beta,[':','-','-.','--']):
-                    uw = linspace(abs(u),v[VelocityField](rscl*0.85,b),1001)
-                    rbnd = x[VelocityField](uw,b)/rscl
+                    uw = linspace(abs(u),v[VelocityField](rscl*0.85,b,V0),1001)
+                    rbnd = x[VelocityField](uw,b,V0)/rscl
                     tr = arccos(abs(u)/uw)
                     xt = rbnd*cos(tr)
                     yt = rbnd*sin(tr)
                     axis.plot(sign(u)*xt+u, yt,color=color,ls=ls,lw=2)
                     axis.plot(sign(u)*xt+u,-yt,color=color,ls=ls,lw=2)
             else:
-                uw = linspace(abs(u),v[VelocityField](rscl*0.9,beta),1001)
-                rbnd = x[VelocityField](uw,beta)/rscl
+                uw = linspace(abs(u),v[VelocityField](rscl*0.9,beta,V0),1001)
+                rbnd = x[VelocityField](uw,beta,V0)/rscl
                 tr = arccos(abs(u)/uw)
                 xt = rbnd*cos(tr)
                 yt = rbnd*sin(tr)
