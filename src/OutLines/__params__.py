@@ -76,7 +76,8 @@ DensLabs = {'PowerLaw':[r'$\alpha$'],\
 # dictionary of all parameter initial guesses
 BetaPars = {'BetaCAK':[1],\
             'AccPlaw':[2],\
-            'VelPlaw':[2]}
+            'VelPlaw':[1],\
+            'Expontl':[1]}
 ProfPars = {'Static':
             {'Nebular':[1],\
             'Absorption':[14],\
@@ -112,7 +113,8 @@ DensPars = {'PowerLaw':[2],\
 # dictionary of all recommended parameter bounds
 BetaBounds = {'BetaCAK':[[0.1],[5]],\
             'AccPlaw':[[1.001],[5]],\
-            'VelPlaw':[[0.1],[5]]}
+            'VelPlaw':[[0.1],[5]],\
+            'Expontl':[[0.001],[5]]}
 ProfBounds = {'Static':
             {'Nebular':[[0],[inf]],\
             'Absorption':[[10],[25]],\

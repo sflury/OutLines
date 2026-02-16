@@ -108,6 +108,12 @@ def x_vplaw(u,beta,vini,A=0.5):
 # Steidel 2010 acceleration power law
 def x_aplaw(u,beta,vini):
     return ( 1  -  ((u-vini)/(1-vini))**2 )**(1/(1-beta))
+# Murray 2005 optically thick radiation pressure
+def x_M2005(u,beta,vini):
+    return exp( ((u-vini)/(1-vini))**2 )
+# my own exponential law
+def x_expon(u,beta,vini):
+    return 1-log(1-(u-vini)/(1-vini))/beta
 ##
 ## expressed as w = f(x)
 ##
@@ -120,13 +126,20 @@ def w_vplaw(xv,beta,vini,A=0.5):
 # Steidel 2010 acceleration power law
 def w_aplaw(xv,beta,vini):
     return (1-vini)*(1-xv**(1-beta))**0.5 + vini
+# Murray 2005 optically thick radiation pressure
+def w_M2005(xv,beta,vini):
+    return (1-vini)*sqrt(log(x)) + vini
+# my own exponential law
+def w_expon(xv,beta,vini):
+    return (1-vini)*(1-exp(-beta*(xv-1))) + vini
 ##
 ## related differentials -- velocity gradients
 ##
 # generalized callable
 def dxdw(w,beta,vini,VF):
     return dxdv[VF](w,beta,vini)
-# inverse of the radial velocity gradient via central finite difference method
+# inverse of the radial velocity gradient
+# via central finite difference method
 def dxdw_cfd(w,beta,VF,h=2**-20):
     return (x[VF](w+h,beta)-x[VF](w,beta))/h
 # explicit inverse of the radial velocity gradient
@@ -141,6 +154,11 @@ def dxdw_aplaw(u,beta,vini):
 def dxdw_vplaw(u,beta,vini):
     #return (x_vplaw(u,beta)-1)/(beta*u)
     return (x_vplaw(u,beta,vini)-1)/(beta*(u-vini))
+def dxdw_M2005(xv,beta,vini):
+    coef = 2*(u-vini)/((1-vini)**2)
+    return x_M2005(xv,beta,vini)*coeff
+def dxdw_expon(u,beta,vini):
+    return (beta*(1-u))**-1
 ###
 ### Dictionaries of Possible Models
 ###
@@ -164,15 +182,21 @@ n = {'PowerLaw':        dens_plaw,\
 # normalized radial profiles
 x = {'VelPlaw':   x_vplaw,\
      'AccPlaw':   x_aplaw,\
-     'BetaCAK':   x_cak}
+     'BetaCAK':   x_cak,\
+     'Expontl':   x_expon,\
+     'M2005TK':   x_M2005}
 # normalized velocity fields
 v = {'VelPlaw':   w_vplaw,\
      'AccPlaw':   w_aplaw,\
-     'BetaCAK':   w_cak}
+     'BetaCAK':   w_cak,\
+     'Expontl':   w_expon,\
+     'M2005TK':   w_M2005}
 # normalized velocity gradients
 dxdv = {'VelPlaw':   dxdw_vplaw,\
         'AccPlaw':   dxdw_aplaw,\
-        'BetaCAK':   dxdw_cak}
+        'BetaCAK':   dxdw_cak,\
+        'Expontl':   dxdw_expon,
+        'M2005TK':   dxdw_M2005}
 ###
 ### convenience functions for static gas
 ###
@@ -231,15 +255,12 @@ def precalc_geometry(incl,tO,tC,vdisk):
     for theta in [tO,tC]:
         # spherical cap projected as ellipse located at S
         # with horizontal axis g and vertical axis h
-        if theta == 0 :
-            g = 0.
-            h = 1.
-        elif theta == pi/2 :
-            g = 1.
-            h = 1.
+        h = 1.
+        if theta < 2**-20 :        g = 0.
+        elif theta > pi/2-2**-20 : g = 1.
         else:
             g = sin(theta)
-            h = sin(theta)
+            h *= sin(theta)
         # no inclination
         if incl < 2**-20 : S = 0.
         # with inclination
