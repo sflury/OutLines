@@ -31,7 +31,6 @@ def calc_limits(ww0,vinf,beta,vini,vapr,VF,Inflow=False):
     return umin,umax,cone
 # nebular emission
 def nebular(w,u,vinf,beta,vini,geo,cone,par,VF,DP):
-    print('nebular',geo)
     omega  = vinf*w                                    # relative velocity
     Lrnzt1 = sqrt(1-omega**2)                          # Lorenzt factor
     DopRel = square(1-omega)*sqrt((1+omega)/(1-omega)) # relative Doppler shift
@@ -73,7 +72,7 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         geo = precalc_geometry(incl,tO,tC,vdisk)
         # return the integral
         args = (u,vinf,beta,vini,geo,cone,par,VF,DP)
-        return fixed_quad(nebular,umin,umax,args=args,n=1024)[0]
+        return fixed_quad(nebular,umin,umax,args=args,n=64)[0]
 # calculate unnormalized profile for a sphere or bicone
 # w,w0,vinf,beta,incl,pi/2,0,inf,vini,vapr,*par,**kwargs
 def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):

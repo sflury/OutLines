@@ -70,7 +70,7 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         # set up geometry terms that do not depend on velocity
         geo = precalc_geometry(incl,tO,tC,vdisk)
         # return the integral
-        return fixed_quad(absorp,umin,umax,args=(u,umin,vinf,beta,vini,geo,cone,par,VF,DP),n=1024)[0]
+        return fixed_quad(absorp,umin,umax,args=(u,umin,vinf,beta,vini,geo,cone,par,VF,DP),n=64)[0]
 # calculate unnormalized profile
 def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
     # obtain velocity limits for integral
