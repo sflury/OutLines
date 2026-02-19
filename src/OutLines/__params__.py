@@ -20,21 +20,21 @@ GeomName = {'Spherical':[],\
 DensName = {'PowerLaw':['PowerLawIndex'],\
             'Exponential':['DecayRate'],\
             'PowerLaw2':['PowerLawIndex1','PowerLawIndex2','Inflection'],\
-            'Normal':['Radius','Width'],\
-            'LogNormal':['LogRadius','LogWidth'],\
-            'DLogistic':['Radius','GrowthRate'],\
+            'Normal':['Peak','Width'],\
+            'LogNormal':['LogPeak','LogWidth'],\
+            'DLogistic':['Peak','GrowthRate'],\
             'Shell':['Radius','Width'],\
-            'FRED':['RiseRate','DecayRate','Radius'],\
-            'Pulses':['PulseWidth','PulseInterval','InitRadius'],\
+            'FRED':['RiseRate','DecayRate','Peak'],\
+            'Pulses':['PulseWidth','PulseInterval','InitPeak'],\
             'DampedPulses':['DecayRate',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
-            'PacketPulses':['PacketWidth','PacketRadius',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
-            'PulsesLog':['PulseWidth','PulseInterval','InitRadius'],\
+                      'PulseWidth','PulseInterval','InitPeak'],\
+            'PacketPulses':['PacketWidth','PacketPeak',\
+                      'PulseWidth','PulseInterval','InitPeak'],\
+            'PulsesLog':['PulseWidth','PulseInterval','InitPeak'],\
             'DampedPulsesLog':['DecayRate',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
-            'PacketPulsesLog':['PacketWidth','PacketRadius',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
+                      'PulseWidth','PulseInterval','InitPeak'],\
+            'PacketPulsesLog':['PacketWidth','PacketPeak',\
+                      'PulseWidth','PulseInterval','InitPeak'],\
             }
 # dictionary of all parameter labels
 ProfLabs = {'Static':
@@ -76,7 +76,8 @@ DensLabs = {'PowerLaw':[r'$\alpha$'],\
 # dictionary of all parameter initial guesses
 BetaPars = {'BetaCAK':[1],\
             'AccPlaw':[2],\
-            'VelPlaw':[2]}
+            'VelPlaw':[1],\
+            'Expontl':[1]}
 ProfPars = {'Static':
             {'Nebular':[1],\
             'Absorption':[14],\
@@ -112,7 +113,8 @@ DensPars = {'PowerLaw':[2],\
 # dictionary of all recommended parameter bounds
 BetaBounds = {'BetaCAK':[[0.1],[5]],\
             'AccPlaw':[[1.001],[5]],\
-            'VelPlaw':[[0.1],[5]]}
+            'VelPlaw':[[0.1],[5]],\
+            'Expontl':[[0.001],[5]]}
 ProfBounds = {'Static':
             {'Nebular':[[0],[inf]],\
             'Absorption':[[10],[25]],\

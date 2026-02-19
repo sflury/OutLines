@@ -554,7 +554,7 @@ class Nebular():
     def __init__(self,w0):
         kwargs = {k:self.settings[k] for k in \
             ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
-        self.OutLinesModel = __nebular__.build_profile_model(**kwargs)
+        self.OutLinesModel = build_profile_model('Nebular',**kwargs)
         pass
     # define profile with and without a static ISM component
     # order of parameters:
@@ -648,7 +648,7 @@ class Absorption():
     def __init__(self,w0,fosc):
         kwargs = {k:self.settings[k] for k in \
             ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
-        self.OutLinesModel = __absorption__.build_profile_model(**kwargs)
+        self.OutLinesModel = build_profile_model('Absorption',**kwargs)
         pass
     # define profile with and without a static ISM component
     def __WithStatic__(self,w,sigv,vinf,beta,*pars):
@@ -758,7 +758,7 @@ class Resonant():
     def __init__(self,w0,fosc,pline):
         kwargs = {k:self.settings[k] for k in \
             ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
-        self.OutLinesModel = __resonfluor__.build_profile_model(**kwargs)
+        self.OutLinesModel = build_profile_model('Resonant',**kwargs)
         pass
     # define profile with and without a static ISM component
     def __WithStatic__(self,w,sigv,vinf,beta,*pars):
@@ -889,7 +889,7 @@ class Fluorescent():
     def __init__(self,w0,fosc_flu,fosc_res,pline):
         kwargs = {k:self.settings[k] for k in \
             ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
-        self.OutLinesModel = __resonfluor__.build_profile_model(**kwargs)
+        self.OutLinesModel = build_profile_model('Fluorescent',**kwargs)
         pass
     # define profile with and without a static ISM component
     def __WithStatic__(self,w,sigv,vinf,beta,*pars):
@@ -1020,8 +1020,8 @@ class PCygni():
     def __init__(self,w0,fosc,pline):
         kwargs = {k:self.settings[k] for k in \
             ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
-        self.OutLinesModelA = __absorption__.build_profile_model(**kwargs)
-        self.OutLinesModelR = __resonfluor__.build_profile_model(**kwargs)
+        self.OutLinesModelA = __absorption__.build_profile_model('Absorption',**kwargs)
+        self.OutLinesModelR = __resonfluor__.build_profile_model('Resonant',**kwargs)
         pass
     # define profile with and without a static ISM component
     def __WithStatic__(self,w,sigv,vinf,beta,*pars):
@@ -1081,3 +1081,248 @@ class PCygni():
     @staticmethod
     def __SourceFunction__(tau,profile):
         return 1-exp(-tau*profile)
+
+#
+'''
+Name:
+    build_profile_model
+
+Purpose:
+    Construct a unique function based on user-specified model options. This
+    function will then compute and return the normalized line profiles.
+
+Keyword Arguments:
+            :VelocityField (*str*): radial velocity field indicating the assumed
+                    treatment of the underlying physics and acceleration.
+                    Options include
+                         \'BetaCAK\' (1-1/x)^b from CAK theory
+                         \'AccPlaw\' sqrt(1-x^(1-b)) from Steidel et al. 2010
+                         \'VelPlaw\' 0.5(x-1)^b from various sources
+            :Geometry (*str*): azimuthal geometry capturing the (an)isotropy
+                    Options include
+                        \'Sphere\' or \'Spherical\' isotropic case
+                        \'FilledCones\' bidirectional cones
+                        \'HollowCones\' or \'OpenCones\' cones with a cavity
+                        \'HollowConesFixedCavity\' cones with fixed cavity size
+            :DensityProfile (*str*): radial profile to use for the gas density.
+                    Options include integration of many pulses or episodes
+                         \'PowerLaw\'
+                         \'Exponential\'
+                         \'PowerLaw2\'
+                     and individual pulse-like episodes or outbursts
+                         \'LogNormal\'
+                         \'Normal\'
+                         \'Shell\'
+                         \'FRED\'
+                    or a combination of the two
+                         \'Pulses\'
+                         \'DampedPulses\'
+            :Disk     (*bool*): boolean indicating whether a disk is present and
+                    obstructs the cone posterior to the observer -- requires cone
+                    geometry in order to take effect
+            :Aperture (*bool*): boolean indicating whether the observed profile is
+                    truncated due to the effects of a spherical aperture
+
+Returns:
+    :profile (*function*): a function which calculates the line profile for a
+                        galactic outflow for the user-provided model settings
+
+'''
+def build_profile_model(LineType,VelocityField='BetaCAK',DensityProfile='PowerLaw',Geometry='Sphere',Pulse='Normal',Aperture=False,Disk=False,FromRest=True):
+    # possible profile model choices
+    kwargs = dict(VF=VelocityField,DP=DensityProfile,Pulse=Pulse)
+    # different line profile types
+    calc_phi = {'Nebular':      __nebular__.calc_phi,\
+                'Resonant':     __resonfluor__.calc_phi,\
+                'Fluorescent':  __resonfluor__.calc_phi,\
+                'Absorption':   __absorption__.calc_phi,\
+                }
+    ###
+    ### All possible profile geometries with launching from rest
+    ###
+    if FromRest:
+        # hemisphere geometry
+        if 'spher' in Geometry.lower() and 'hemi' in Geometry.lower():
+            if Aperture :
+                def profile(w,w0,vinf,beta,incl,vapr,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,pi/2,0,inf,1e-7,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,beta,incl,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,pi/2,0,inf,1e-7,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        # sphere geometry
+        elif 'spher' in Geometry.lower() and 'hemi' not in Geometry.lower():
+            if Aperture :
+                def profile(w,w0,vinf,beta,vapr,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,0,pi/2,0,0,1e-7,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,beta,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,0,pi/2,0,0,1e-7,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        # filled cone geometry
+        elif 'filled' in Geometry.lower():
+            if Aperture and Disk :
+                def profile(w,w0,vinf,beta,incl,tO,xdisk,vapr,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,0,xdisk,1e-7,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            elif Disk and not Aperture :
+                def profile(w,w0,vinf,beta,incl,tO,xdisk,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,0,xdisk,1e-7,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            elif Aperture and not Disk :
+                def profile(w,w0,vinf,beta,incl,tO,vapr,*par):
+                    phi = calc_phi[LineType](w,w0,vinf,incl,tO,0,0,1e-7,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,beta,incl,tO,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,0,0,1e-7,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        # open cone geometry
+        elif 'hollow' in Geometry.lower() or 'cavity' in Geometry.lower() or 'open' in Geometry.lower():
+            if 'fix' in Geometry.lower():
+                if Aperture and Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,xdisk,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,xdisk,1e-7,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Disk and not Aperture :
+                    def profile(w,w0,vinf,beta,incl,tO,xdisk,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,xdisk,1e-7,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Aperture and not Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,0,1e-7,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                else:
+                    def profile(w,w0,vinf,beta,incl,tO,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,0,1e-7,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+            else:
+                if Aperture and Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,xdisk,1e-7,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Disk and not Aperture :
+                    def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,xdisk,1e-7,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Aperture and not Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,tC,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,0,1e-7,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                else:
+                    def profile(w,w0,vinf,beta,incl,tO,tC,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,0,1e-7,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+        else:
+            print('Geometry not recognized. Options are \'Sphere\',\n'+
+                '\'Hemisphere\', \'FilledCones\', \'HollowCones\', or \'HollowConesFixedCavity\'.')
+    ###
+    ### All possible profile geometries with launching from rest
+    ###
+    else:
+        if 'spher' in Geometry.lower() and 'hemi' in Geometry.lower():
+            if Aperture :
+                def profile(w,w0,vinf,beta,incl,vini,vapr,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,pi/2,0,inf,vini,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,beta,incl,vini,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,pi/2,0,inf,vini,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        elif 'spher' in Geometry.lower() and 'hemi' not in Geometry.lower():
+            if Aperture :
+                def profile(w,w0,vinf,beta,vini,vapr,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,0,pi/2,0,0,vini,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,beta,vini,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,0,pi/2,0,0,vini,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        elif 'filled' in Geometry.lower():
+            if Aperture and Disk :
+                def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,vapr,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,0,xdisk,vini,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            elif Disk and not Aperture :
+                def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,0,xdisk,vini,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            elif Aperture and not Disk :
+                def profile(w,w0,vinf,beta,incl,tO,vini,vapr,*par):
+                    phi = calc_phi[LineType](w,w0,vinf,incl,tO,0,0,vini,vapr,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+            else:
+                def profile(w,w0,vinf,beta,incl,tO,vini,*par):
+                    phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,0,0,vini,1,*par,**kwargs)
+                    return phi/trapezoid(phi,x=w)
+        elif 'hollow' in Geometry.lower() or 'cavity' in Geometry.lower() or 'open' in Geometry.lower():
+            if 'fix' in Geometry.lower():
+                if Aperture and Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,xdisk,vini,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Disk and not Aperture :
+                    def profile(w,w0,vinf,beta,incl,tO,xdisk,vini,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,xdisk,vini,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Aperture and not Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,vini,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,0,vini,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                else:
+                    def profile(w,w0,vinf,beta,incl,tO,vini,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tO-0.174533,0,vini,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+            else:
+                if Aperture and Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Disk and not Aperture :
+                    def profile(w,w0,vinf,beta,incl,tO,tC,xdisk,vini,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,xdisk,vini,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                elif Aperture and not Disk :
+                    def profile(w,w0,vinf,beta,incl,tO,tC,vini,vapr,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,0,vini,vapr,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+                else:
+                    def profile(w,w0,vinf,beta,incl,tO,tC,vini,*par):
+                        phi = calc_phi[LineType](w/w0,vinf,beta,incl,tO,tC,0,vini,1,*par,**kwargs)
+                        return phi/trapezoid(phi,x=w)
+        else:
+            print('Geometry not recognized. Options are \'Sphere\',\n'+
+                '\'Hemisphere\', \'FilledCones\', \'HollowCones\', or \'HollowConesFixedCavity\'.')
+    return profile
+'''
+Name:
+    profile
+
+Purpose:
+    Calculate the spectral line profile
+    under the Sobolev approximation for the user-specified geometry,
+    density profile, and velocity field.
+
+Arguments:
+    :wave   (*np.ndarray*) : array of observed wavelengths
+    :wave0  (*float*) : rest-frame central wavelength
+    :vinf   (*float*) : terminal velocity in c units
+    :beta   (*float*) : power-law index of velocity field
+    :incl   (*float*) : inclination of the cone
+                        (only if filled or hollow conical Geometry)
+    :thetaO (*float*) : opening angle of the filled cone
+                        (only if filled or hollow conical Geometry)
+    :thetaC (*float*) : opening angle of cavity in cone
+                        (only if hollow cone Geometry)
+    :xdisk  (*float*) : scaled disk radius (only provide if Disk)
+    :vapr   (*float*) : scaled aperture limit on velocity
+                        (only if correcting for a circular aperture)
+    :p1,p2,...: (*floats*) : density field parameters, must match selected
+                        'DP' -- see documentation
+
+Returns:
+    :profile (*function*) : function which computes the normalized line profile
+                        in units of wavelength^(-1) for the given options
+'''

@@ -76,11 +76,11 @@ def dens_norm(u,beta,vini,VF,xi,sigma):
 # ensemble with linear spacing
 def dens_pulseslin(u,beta,vini,VF,sigma,dx,x0,pulse='Normal'):
     dens_pulse = n[pulse]
-    return sum([dens_pulse(u,beta,vini,VF,x,sigma) for x in arange(x0,x[VF](0.95,beta,vini)+dx,dx)],axis=0)
+    return sum([dens_pulse(u,beta,vini,VF,x,sigma) for x in arange(x0,x[VF](0.99,beta,vini)+dx,dx)],axis=0)
 # ensemble with log spacing
 def dens_pulseslog(u,beta,vini,VF,sigma,dx,x0,pulse='Normal'):
     dens_pulse = n[pulse]
-    return sum([dens_pulse(u,beta,vini,VF,x,sigma) for x in 10**arange(log10(x0),log10(x[VF](0.95,beta,vini))+dx,dx)],axis=0)
+    return sum([dens_pulse(u,beta,vini,VF,x,sigma) for x in 10**arange(log10(x0),log10(x[VF](0.99,beta,vini))+dx,dx)],axis=0)
 # damped ensemble with linear spacing
 def dens_pulsedamplin(u,beta,vini,VF,r,sigma,dx,x0,pulse='Normal'):
     return dens_pulseslin(u,beta,vini,VF,sigma,dx,x0,pulse=pulse) * dens_exp(u,beta,vini,VF,r)
@@ -108,6 +108,12 @@ def x_vplaw(u,beta,vini,A=0.5):
 # Steidel 2010 acceleration power law
 def x_aplaw(u,beta,vini):
     return ( 1  -  ((u-vini)/(1-vini))**2 )**(1/(1-beta))
+# Murray 2005 optically thick radiation pressure
+def x_M2005(u,beta,vini):
+    return exp( ((u-vini)/(1-vini))**2 )
+# my own exponential law
+def x_expon(u,beta,vini):
+    return 1-log(1-(u-vini)/(1-vini))/beta
 ##
 ## expressed as w = f(x)
 ##
@@ -120,13 +126,20 @@ def w_vplaw(xv,beta,vini,A=0.5):
 # Steidel 2010 acceleration power law
 def w_aplaw(xv,beta,vini):
     return (1-vini)*(1-xv**(1-beta))**0.5 + vini
+# Murray 2005 optically thick radiation pressure
+def w_M2005(xv,beta,vini):
+    return (1-vini)*sqrt(log(x)) + vini
+# my own exponential law
+def w_expon(xv,beta,vini):
+    return (1-vini)*(1-exp(-beta*(xv-1))) + vini
 ##
 ## related differentials -- velocity gradients
 ##
 # generalized callable
 def dxdw(w,beta,vini,VF):
     return dxdv[VF](w,beta,vini)
-# inverse of the radial velocity gradient via central finite difference method
+# inverse of the radial velocity gradient
+# via central finite difference method
 def dxdw_cfd(w,beta,VF,h=2**-20):
     return (x[VF](w+h,beta)-x[VF](w,beta))/h
 # explicit inverse of the radial velocity gradient
@@ -141,6 +154,11 @@ def dxdw_aplaw(u,beta,vini):
 def dxdw_vplaw(u,beta,vini):
     #return (x_vplaw(u,beta)-1)/(beta*u)
     return (x_vplaw(u,beta,vini)-1)/(beta*(u-vini))
+def dxdw_M2005(xv,beta,vini):
+    coef = 2*(u-vini)/((1-vini)**2)
+    return x_M2005(xv,beta,vini)*coeff
+def dxdw_expon(u,beta,vini):
+    return (beta*(1-u))**-1
 ###
 ### Dictionaries of Possible Models
 ###
@@ -164,15 +182,21 @@ n = {'PowerLaw':        dens_plaw,\
 # normalized radial profiles
 x = {'VelPlaw':   x_vplaw,\
      'AccPlaw':   x_aplaw,\
-     'BetaCAK':   x_cak}
+     'BetaCAK':   x_cak,\
+     'Expontl':   x_expon,\
+     'M2005TK':   x_M2005}
 # normalized velocity fields
 v = {'VelPlaw':   w_vplaw,\
      'AccPlaw':   w_aplaw,\
-     'BetaCAK':   w_cak}
+     'BetaCAK':   w_cak,\
+     'Expontl':   w_expon,\
+     'M2005TK':   w_M2005}
 # normalized velocity gradients
 dxdv = {'VelPlaw':   dxdw_vplaw,\
         'AccPlaw':   dxdw_aplaw,\
-        'BetaCAK':   dxdw_cak}
+        'BetaCAK':   dxdw_cak,\
+        'Expontl':   dxdw_expon,
+        'M2005TK':   dxdw_M2005}
 ###
 ### convenience functions for static gas
 ###
@@ -231,15 +255,12 @@ def precalc_geometry(incl,tO,tC,vdisk):
     for theta in [tO,tC]:
         # spherical cap projected as ellipse located at S
         # with horizontal axis g and vertical axis h
-        if theta == 0 :
-            g = 0.
-            h = 1.
-        elif theta == pi/2 :
-            g = 1.
-            h = 1.
+        h = 1.
+        if theta < 2**-20 :        g = 0.
+        elif theta > pi/2-2**-20 : g = 1.
         else:
             g = sin(theta)
-            h = sin(theta)
+            h *= sin(theta)
         # no inclination
         if incl < 2**-20 : S = 0.
         # with inclination
@@ -301,12 +322,15 @@ def cone_inscr(u,vinf,S,g,h,A,B,C,i,t,rdisk,rdisk_sini,adisk,cone,w):
     # if w cannot project onto u
     # then return no circle
     if u > w : return 0.
-    # radius of deprojected velocity from cos varrho = u/w
+    # radius sin varrho of deprojected velocity
+    # from cos varrho = u/w and sin^2 + cos^2 = 1
     rdprv = sqrt(1-(u/w)**2)
     # intersection points (p,q) of deprojected velocity with projected spherical cap
     C += rdprv**2
     qc = (B+array([-1,1])*sqrt(B**2-4*A*C))/(2*A)
     # pc = sqrt(rbnd**2-qc**2) # --> no need to calculate
+    # unit arc length
+    dl = 0.
     # if no intersection occurs, qc[0] (always smaller than qc[1]) > rdprv
     # or b^2 < 4ac, giving a NaN intersection
     # if u/w close to 1, then arc length -> 0 due to integral limit
@@ -316,7 +340,6 @@ def cone_inscr(u,vinf,S,g,h,A,B,C,i,t,rdisk,rdisk_sini,adisk,cone,w):
     elif rdprv < h-S : return 1.
     # otherwise, full cone treatment
     else:
-        dl = 0.
         # if first intersection below x-axis,
         # include full deprojected velocity minus the angle subtended by (pc,qc)
         if qc[0] < 0 and qc[0] > -rdprv : dl += 1-arccos(qc[0]/rdprv)/pi
@@ -347,6 +370,8 @@ def cndk_inscr(u,vinf,S,g,h,A,B,C,i,t,rdisk,rdisk_sini,adisk,cone,w):
     # intersection points (pd,qd) of deprojected velocity with projected disk
     qd = sqrt((rdprv**2-rdisk**2)/adisk)
     # pc = sqrt(rbnd**2-qc**2) # --> no need to calculate
+    # unit arc length
+    dl = 0.
     # if no intersection occurs, qc[0] (always smaller than qc[1]) > rdprv
     # or b^2 < 4ac, giving a NaN intersection
     # if u/w close to 1, then arc length -> 0 due to integral limit
@@ -369,7 +394,6 @@ def cndk_inscr(u,vinf,S,g,h,A,B,C,i,t,rdisk,rdisk_sini,adisk,cone,w):
     elif rdisk > rdprv and rdisk > 2**-20 :
         # the cone is posterior to disk
         if cone == 'post' :
-            dl = 0.
             # disk is below projected cone -- no obstruction
             if qc[0] > 0 and qc[0] > qd : dl += arccos(qc[0]/rdprv)/pi
             # disk obstructs lower part of projected cone
@@ -380,7 +404,6 @@ def cndk_inscr(u,vinf,S,g,h,A,B,C,i,t,rdisk,rdisk_sini,adisk,cone,w):
             if qc[1] <= rdprv and i+t > pi/2 : dl += arccos(qc[1]/rdprv)/pi
         # if cone is anterior to disk
         elif cone == 'ante' :
-            dl = 0.
             # if first intersection below x-axis,
             # include full deprojected velocity minus the angle subtended by (pc,qc)
             if qc[0] < 0 and qc[0] > -rdprv : dl += 1-arccos(qc[0]/rdprv)/pi
@@ -398,7 +421,6 @@ def cndk_inscr(u,vinf,S,g,h,A,B,C,i,t,rdisk,rdisk_sini,adisk,cone,w):
                 elif qc[1] < qd and qd < rdprv : dl += arccos(qd/rdprv)/pi
     # if no disk or if disk radius < deprojected velocity radius, just consider the cones
     else:
-        dl = 0.
         # if first intersection below x-axis,
         # include full deprojected velocity minus the angle subtended by (pc,qc)
         if qc[0] < 0 and qc[0] > -rdprv : dl += 1-arccos(qc[0]/rdprv)/pi
