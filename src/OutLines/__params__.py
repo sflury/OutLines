@@ -20,21 +20,21 @@ GeomName = {'Spherical':[],\
 DensName = {'PowerLaw':['PowerLawIndex'],\
             'Exponential':['DecayRate'],\
             'PowerLaw2':['PowerLawIndex1','PowerLawIndex2','Inflection'],\
-            'Normal':['Radius','Width'],\
-            'LogNormal':['LogRadius','LogWidth'],\
-            'DLogistic':['Radius','GrowthRate'],\
+            'Normal':['Peak','Width'],\
+            'LogNormal':['LogPeak','LogWidth'],\
+            'DLogistic':['Peak','GrowthRate'],\
             'Shell':['Radius','Width'],\
-            'FRED':['RiseRate','DecayRate','Radius'],\
-            'Pulses':['PulseWidth','PulseInterval','InitRadius'],\
+            'FRED':['RiseRate','DecayRate','Peak'],\
+            'Pulses':['PulseWidth','PulseInterval','InitPeak'],\
             'DampedPulses':['DecayRate',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
-            'PacketPulses':['PacketWidth','PacketRadius',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
-            'PulsesLog':['PulseWidth','PulseInterval','InitRadius'],\
+                      'PulseWidth','PulseInterval','InitPeak'],\
+            'PacketPulses':['PacketWidth','PacketPeak',\
+                      'PulseWidth','PulseInterval','InitPeak'],\
+            'PulsesLog':['PulseWidth','PulseInterval','InitPeak'],\
             'DampedPulsesLog':['DecayRate',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
-            'PacketPulsesLog':['PacketWidth','PacketRadius',\
-                      'PulseWidth','PulseInterval','InitRadius'],\
+                      'PulseWidth','PulseInterval','InitPeak'],\
+            'PacketPulsesLog':['PacketWidth','PacketPeak',\
+                      'PulseWidth','PulseInterval','InitPeak'],\
             }
 # dictionary of all parameter labels
 ProfLabs = {'Static':
