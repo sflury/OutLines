@@ -1,7 +1,7 @@
 <img width="512" alt="OutLines Logo" src="https://github.com/sflury/OutLines/blob/main/docs/logo.png">
 
 OutLines models spectral line profiles from winds, bubbles, and
-outflows following the formalism in [Flury 2025](https://ui.adsabs.harvard.edu/abs/2025arXiv251210650F/abstract) 
+outflows following the formalism in [Flury 2025](https://ui.adsabs.harvard.edu/abs/2025arXiv251210650F/abstract)
 (see also [Flury, Moran, & Eleazer 2023](https://ui.adsabs.harvard.edu/abs/2023MNRAS.525.4231F)
 for an earlier version). A primary goal of OutLines is to remain agnostic to the
 underlying physics while also drawing on physical motivations for the geometry,
@@ -88,22 +88,22 @@ props.print_props()
 |         Aperture : No            |
 |             Disk : Yes           |
 ----------------------------------
- ----------------------------------
-|         MODEL PARAMETERS         |
- ----------------------------------
-|     DopplerWidth :    8.994 km/s |
-| TerminalVelocity :  500.000 km/s |
-|    VelocityIndex :    1.000      |
-|      FluxStatic1 :    0.336      |
-|      FluxStatic2 :    1.000      |
-|     FluxOutflow1 :    0.336      |
-|     FluxOutflow2 :    1.000      |
-|      Inclination :   45.000°     |
-|     OpeningAngle :   30.000°     |
-|      CavityAngle :   15.000°     |
-|       DiskRadius :    2.000      |
-|    PowerLawIndex :    2.000      |
- ----------------------------------
+ ------------------------------------
+|         MODEL PARAMETERS           |
+ ------------------------------------
+|     DopplerWidth :      8.994 km/s |
+| TerminalVelocity :    500.000 km/s |
+|    VelocityIndex :      1.000      |
+|      FluxStatic1 :      0.336      |
+|      FluxStatic2 :      1.000      |
+|     FluxOutflow1 :      0.336      |
+|     FluxOutflow2 :      1.000      |
+|      Inclination :     45.000°     |
+|     OpeningAngle :     30.000°     |
+|      CavityAngle :     15.000°     |
+|       DiskRadius :      2.000      |
+|    PowerLawIndex :      2.000      |
+ ------------------------------------
  -------------------------------------------
 |             MODEL PROPERTIES              |
  -------------------------------------------
@@ -141,8 +141,8 @@ plt.show()
 
 While this code is provided publicly, it did require substantial effort to
 develop and document. Any use thereof must be cited in any publications in which
-this code is used. The BibTeX reference for the [Flury (2025)](https://arxiv.org/abs/2512.10650) paper which 
-presents the models and code is below; however, a GitHub CCF is also provided 
+this code is used. The BibTeX reference for the [Flury (2025)](https://arxiv.org/abs/2512.10650) paper which
+presents the models and code is below; however, a GitHub CCF is also provided
 for convenience.
 
 ``` bibtex
@@ -152,7 +152,7 @@ for convenience.
       eprint={2512.10650},
       archivePrefix={arXiv},
       primaryClass={astro-ph.GA},
-      url={https://arxiv.org/abs/2512.10650}, 
+      url={https://arxiv.org/abs/2512.10650},
          year = {2025},
         month = {dec} }
 ```
