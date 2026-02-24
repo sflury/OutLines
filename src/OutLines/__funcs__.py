@@ -1,12 +1,12 @@
 from numpy import array,append,ones,zeros,absolute,where,max,min,sum,nansum,\
                     log,log10,exp,sqrt,cos,sin,arccos,arcsin,pi,inf,nan,isnan,\
                     isfinite,sign,arange,linspace,logspace,argmin,nanmin,\
-                    argmax,nanmax,interp,diff,quantile,nanquantile,square
+                    argmax,nanmax,interp,diff,quantile,nanquantile,square,genfromtxt
 from numpy.random import seed,default_rng
 global uniform_sampler
 uniform_sampler = default_rng().random
 from scipy.optimize import brentq,newton,fminbound
-from scipy.integrate import trapezoid,simpson,fixed_quad,cumulative_trapezoid
+from scipy.integrate import cumulative_trapezoid
 from scipy.special import wofz
 from functools import partial
 ###
@@ -236,6 +236,9 @@ def solve_u1(ya,beta,vini,VF,yi):
     # if not, field is close to aperture so integration stops at aperture
     else:
         return ya
+###
+### Numerical Integrators
+###
 # monte carlo integrator, default n_samp=10^4 gives 1% error since E~sqrt(N)
 def int_mc(func,w0,w1,u,vinf,beta,vini,geo,cone,par,VF,DP,n_samp=1e4):
     intgrd = lambda w: func(w,u,vinf,beta,vini,geo,cone,par,VF,DP)
@@ -245,6 +248,19 @@ def int_mc(func,w0,w1,u,vinf,beta,vini,geo,cone,par,VF,DP,n_samp=1e4):
     weight = (w1-w0)*fun_mx
     n_incl = count_nonzero(fun_mc<=intgrd(w_mc))
     return weight*n_incl/n_samp
+# gauss-legendre quadrature nodes and weights for n=96
+global lgndr_x,lgrndr_w,ell_zeros
+lgndr_x,lgndr_w = genfromtxt('OutLines/gl_roots.tab', delimiter=',').T
+lgndr_x = 0.5*(array([-lgndr_x[::-1],lgndr_x]).flatten()+1.)
+lgndr_w = array([ lgndr_w[::-1],lgndr_w]).flatten()
+ell_zeros = zeros(len(lgndr_x))
+# gauss-legendre quadrature
+def fixed_quad(func,a,b,args=()):
+    lgndr_y = (b-a)*lgndr_x + a
+    return (b-a)/2. * nansum(lgndr_w*func(lgndr_y,*args))
+# trapezoid integration
+def trapezoid(y,x):
+    return sum( (x[1:]-x[:-1])*(y[:-1]+y[1:])/2 )
 ###
 ### Non-spherical Geometries
 ###
