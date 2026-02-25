@@ -53,7 +53,7 @@ def absorp(w,u,umin,vinf,beta,vini,geo,cone,par,VF,DP):
         # cavity in cone
         if geo[12] > 0. :
             ell -= array(list(map(partial(cndk_inscr,u,vinf,*geo[11:],cone),w)))
-        ell = nanmax([ell,zeros(len(w))],axis=0)
+        ell = nanmax([ell,ell_zeros],axis=0)
     return ell*n[DP](w,beta,vini,VF,*par)*dxdw(w,beta,vini,VF)* dTheta
 # integral over column densities for range of allowed velocities
 def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
@@ -70,7 +70,7 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         # set up geometry terms that do not depend on velocity
         geo = precalc_geometry(incl,tO,tC,vdisk)
         # return the integral
-        return fixed_quad(absorp,umin,umax,args=(u,umin,vinf,beta,vini,geo,cone,par,VF,DP),n=64)[0]
+        return fixed_quad(absorp,umin,umax,args=(u,umin,vinf,beta,vini,geo,cone,par,VF,DP))
 # calculate unnormalized profile
 def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
     # obtain velocity limits for integral
