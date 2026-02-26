@@ -74,6 +74,21 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         return fixed_quad(resfluor,umin,umax,args=(u,vinf,beta,vini,geo,cone,par,VF,DP))
 # calculate unnormalized profile for a sphere or bicone
 def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
+    # for ensembles, call individually for each pulse
+    if 'Pulse' in DP :
+        phi_sum = zeros(len(ww0))
+        for xi in range(256):
+            if 'Damp' in DP :
+                par1 = [par[3]+float(xi)*par[2],par[1]]
+                scale = exp(-par[0]*xi)
+            else:
+                par1 = [par[2]+float(xi)*par[1],par[0]]
+                scale = 1.
+            phi_sum += scale*calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,\
+                                                    *par1,VF=VF,DP=Pulse)
+            if scale < exp(-7) : # if > 7 e-foldings, >99.9% of total reached
+                break
+        return phi_sum
     # obtain velocity limits for integral
     umin,umax,cone = calc_limits(ww0,vinf,vini,vapr,beta,VF)
     # line of sight velocity with relativistic corrections

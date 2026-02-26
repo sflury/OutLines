@@ -76,8 +76,30 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
 # calculate unnormalized profile for a sphere or bicone
 # w,w0,vinf,beta,incl,pi/2,0,inf,vini,vapr,*par,**kwargs
 def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
+    # for ensembles, call individually for each pulse
+    if 'Pulse' in DP :
+        phi_sum = zeros(len(ww0))
+        for xi in range(256):
+            if 'Damp' in DP :
+                par1 = [par[3]+float(xi)*par[2],par[1]]
+                scale = exp(-par[0]*xi)
+            else:
+                par1 = [par[2]+float(xi)*par[1],par[0]]
+                scale = 1.
+            phi_sum += scale*calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,\
+                                                    *par1,VF=VF,DP=Pulse)
+            if scale < exp(-7) : # if > 7 e-foldings, >99.9% of total reached
+                break
+        return phi_sum
     # obtain velocity limits for integral
     umin,umax,cone = calc_limits(ww0,vinf,beta,vini,vapr,VF)
+    # improve precision for bubble/shell integrals by limiting the radial range
+    if 'LogNormal' in DP:
+        umin = max([umin,len(umin)*[v[VF](10**(par[0]-5*par[1]),beta,vini)]],axis=0)
+        umax = min([umax,len(umax)*[v[VF](10**(par[0]+5*par[1]),beta,vini)]],axis=0)
+    elif 'Normal' in DP or 'Logistic' in DP or 'Shell' in DP :
+        umin = max([umin,len(umin)*[v[VF](par[0]-3*par[1],beta,vini)]],axis=0)
+        umax = min([umax,len(umax)*[v[VF](par[0]+3*par[1],beta,vini)]],axis=0)
     # line of sight velocity with relativistic corrections
     u = absolute(((ww0)**2-1)/((ww0)**2+1)) / vinf
     # check disk radius and convert to velocity
