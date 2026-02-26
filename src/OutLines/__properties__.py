@@ -1,6 +1,3 @@
-from numpy import trapezoid,array,interp,log,log10,pi,logspace,argmax
-from scipy.optimize import brentq,fminbound
-from scipy.integrate import fixed_quad
 from OutLines.__funcs__ import *
 # hard-wired constants
 global c,mH,mu,Msun,Lsun,yr,pi4,kpc
@@ -110,7 +107,7 @@ class Properties(object):
         vout = self.vinf*self.vel(xout)
         # integrated density profile
         self.Rcal = lambda x1: self.den(self.vel(x1))
-        Rcal = fixed_quad(self.Rcal,1,xout)[0]
+        Rcal = fixed_quad(self.Rcal,1,xout)
         # mass outflow rate in km*Msun/yr (need to multiply by R0^2 n0)
         Mdot = pi4*(cos(self.t1)-cos(self.t0))*mu*mH*vout*Rcal*yr/Msun*kpc**2*1e5
         # relative momentum injection rate in dyne
