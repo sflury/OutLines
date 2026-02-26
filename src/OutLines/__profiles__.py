@@ -420,7 +420,7 @@ def profile_constructor(ProfileSubClass):
                 print('with the same parameters.')
                 return nan
             cdf /= cdf[-1]
-            vel_quant = interp(quantiles,cdf,vels[1:])
+            vel_quant = interp(quantiles,cdf,vels)
             if verbose:
                 print(3*' '+34*'-'+'\n  |'+8*' '+'VELOCITY QUANTILES'+8*' '+'|\n'+3*' '+34*'-')
                 for qi,vq in zip(quantiles,vel_quant):
