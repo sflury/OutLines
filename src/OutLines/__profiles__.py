@@ -411,9 +411,9 @@ def profile_constructor(ProfileSubClass):
             wave = self.w0[0] * sqrt( (1+psi) / (1-psi) ) # longitudinal D-shift
             vels = psi*2.99792458e5 # convert from c units to km / s
             if self.settings['Profile'] != 'Absorption' :
-                cdf  = cumulative_trapezoid(self.get_profile(wave),x=wave)
+                cdf  = cumulative_trapezoid(self.get_profile(wave),wave)
             elif self.settings['Profile'] == 'Absorption' :
-                cdf  = cumulative_trapezoid(1-self.get_profile(wave),x=wave)
+                cdf  = cumulative_trapezoid(1-self.get_profile(wave),wave)
             else:
                 print('Velocity Quantiles Not Supported for P Cygni.')
                 print('Try again using Nebular or Absorption profiles')
@@ -450,7 +450,7 @@ def profile_constructor(ProfileSubClass):
                         init[i,j] = self.get_params()[j]*(1 + disp*randn())
                 if self.settings['Geometry'] == 'HollowCones' :
                     j = where(self.get_param_names()=='OpeningAngle')[0]
-                    if init[i,j+1] >= init[i,j] - 0.0872664626 :
+                    while init[i,j+1] >= init[i,j] - 0.0872664626 :
                         init[i,j+1] = init[i,j] - 0.0872664626+disp*randn()
             return init,nwalk
         # log likelihood for chi squared
