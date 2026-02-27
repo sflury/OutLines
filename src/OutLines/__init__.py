@@ -4,10 +4,10 @@ name:
 dependencies:
     python     3.12.9
     numpy      2.3.5
-    scipy      1.14.1
+    scipy      1.17.0
     matplotlib 3.10.0
 author:
-    Sophia Flury 2026.02.09
+    Sophia Flury 2026.02.26
 '''
 # OutLines functions
 import OutLines.__absorption__
@@ -25,7 +25,8 @@ OutLines.Resonant            = OutLines.__profiles__.Resonant
 OutLines.Fluorescent         = OutLines.__profiles__.Fluorescent
 OutLines.Properties          = OutLines.__properties__.Properties
 OutLines.PlotGeometry        = OutLines.__visualize__.PlotGeometry
-OutLines.PlotConeProjection  = OutLines.__visualize__.PlotConeProjection
+OutLines.PlotConeProj        = OutLines.__visualize__.PlotConeProjection
+OutLines.PlotProjGeom        = OutLines.__visualize__.PlotProjectionGeometry
 OutLines.PlotIsoContours     = OutLines.__visualize__.PlotIsoContours
 # quote from Shelly's "Ode to the West Wind"
 def Quote():
