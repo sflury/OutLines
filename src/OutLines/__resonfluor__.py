@@ -31,6 +31,7 @@ def calc_limits(ww0,vinf,vini,vapr,beta,VF,Inflow=False):
     return umin,umax,cone
 # resonant or fluorescent emission
 def resfluor(w,u,vinf,beta,vini,geo,cone,par,VF,DP):
+    # polar geometry
     omega  = vinf*w                                    # relative velocity
     Lrnzt1 = sqrt(1-omega**2)                          # Lorenzt factor
     DopRel = square(1-omega)*sqrt((1+omega)/(1-omega)) # relative Doppler shift
@@ -74,23 +75,39 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         return fixed_quad(resfluor,umin,umax,args=(u,vinf,beta,vini,geo,cone,par,VF,DP))
 # calculate unnormalized profile for a sphere or bicone
 def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
-    # for ensembles, call individually for each pulse
+    # for ensembles, call recursively for each pulse
     if 'Pulse' in DP :
         phi_sum = zeros(len(ww0))
-        for xi in range(256):
+        check   = 1
+        scale   = 1
+        if 'Damp' in DP : xi = par[3]
+        else:             xi = par[2]
+        # while loop for emission since largest shells have smallest flux
+        # only keep computing if the flux is > 0.001, v < 99.9% terminal
+        # --> or, for damped pulses, if > 7 e-foldings, >99.9% of total reached
+        while ( check > 2**-10 and xi < x[VF](0.999,beta,vini) ) or xi < 5 :
             if 'Damp' in DP :
-                par1 = [par[3]+float(xi)*par[2],par[1]]
+                par1 = [xi,par[1]]
                 scale = exp(-par[0]*xi)
+                xi += par[2]
             else:
-                par1 = [par[2]+float(xi)*par[1],par[0]]
-                scale = 1.
-            phi_sum += scale*calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,\
+                par1 = [xi,par[0]]
+                xi += par[1]
+            phi_pls = scale*calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,\
                                                     *par1,VF=VF,DP=Pulse)
-            if scale < exp(-7) : # if > 7 e-foldings, >99.9% of total reached
-                break
+            phi_sum += phi_pls
+            check = max(phi_pls)
         return phi_sum
     # obtain velocity limits for integral
     umin,umax,cone = calc_limits(ww0,vinf,vini,vapr,beta,VF)
+    # improve precision for bubble/shell integrals by limiting the radial range
+    if 'LogNormal' in DP :
+        umin = max([umin,len(umin)*[v[VF](10**(par[0]-3*par[1]),beta,vini)]],axis=0)
+        umax = min([umax,len(umax)*[v[VF](10**(par[0]+3*par[1]),beta,vini)]],axis=0)
+    # 99.9 percentile for normal distribution
+    elif 'Normal' in DP or 'Shell' in DP :
+        umin = nanmax([umin,len(umin)*[v[VF](par[0]-3*par[1],beta,vini)]],axis=0)
+        umax = nanmin([umax,len(umax)*[v[VF](par[0]+3*par[1],beta,vini)]],axis=0)
     # line of sight velocity with relativistic corrections
     u = absolute(((ww0)**2-1)/((ww0)**2+1)) / vinf
     # check disk radius and convert to velocity
