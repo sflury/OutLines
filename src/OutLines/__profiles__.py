@@ -138,8 +138,7 @@ def profile_constructor(ProfileSubClass):
             self.set_params()
             self.set_profile()
         # check inputs
-        def check_inputs(self,args,VelocityField,DensityProfile,Pulse,\
-                    Geometry,AddStatic,Disk,Aperture,FromRest):
+        def check_inputs(self,args,VelocityField,DensityProfile,Pulse,Geometry):
             # screen velocity setting
             if 'cak' in VelocityField.lower() :       VelocityField = 'BetaCAK'
             elif 'plaw' in VelocityField.lower() :
