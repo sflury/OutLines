@@ -114,12 +114,13 @@ def profile_constructor(ProfileSubClass):
         '''
         def __init__(self,*args,VelocityField='BetaCAK',DensityProfile='PowerLaw',Pulse='Normal',\
                     Geometry='Spherical',AddStatic=False,Disk=False,Aperture=False,FromRest=True):
-
+            # check inputs are valid
+            self.check_inputs(args,VelocityField,DensityProfile,Pulse,Geometry)
             # keyword arguments specifying the model
             self.settings = {'Profile':ProfileSubClass.__name__,\
-                             'VelocityField':VelocityField,\
-                             'DensityProfile':DensityProfile,\
-                             'Geometry':Geometry.replace('Open','Hollow'),\
+                             'VelocityField':self.VelocityField,\
+                             'DensityProfile':self.DensityProfile,\
+                             'Geometry':self.Geometry,\
                              'StaticComponent':AddStatic,\
                              'FromRest':FromRest,\
                              'Aperture':Aperture,\
@@ -130,6 +131,61 @@ def profile_constructor(ProfileSubClass):
             # inheret the wind
             super(Profile,self).__init__(*args)
 
+            # set the number of lines
+            self.nLines = len(self.w0)
+
+            # set parameters, bounds, and profile model
+            self.set_params()
+            self.set_profile()
+        # check inputs
+        def check_inputs(self,args,VelocityField,DensityProfile,Pulse,\
+                    Geometry,AddStatic,Disk,Aperture,FromRest):
+            # screen velocity setting
+            if 'cak' in VelocityField.lower() :       VelocityField = 'BetaCAK'
+            elif 'plaw' in VelocityField.lower() :
+                if 'vel' in VelocityField.lower() :   VelocityField = 'VelPlaw'
+                elif 'acc' in VelocityField.lower() : VelocityField = 'AccPlaw'
+            elif 'exp' in VelocityField.lower() :     VelocityField = 'Expontl'
+            # check velocity field setting
+            try:
+                tmp = BetaName[VelocityField]
+                self.VelocityField = VelocityField
+            except:
+                head = f'VelocityField {VelocityField} not recognized.\n' + \
+                        'Options are \n'
+                for key in BetaName.keys():
+                    head += f'        {key: >16s}\n'
+                raise RuntimeError(head)
+            # screen geometry setting
+            if 'spher' in Geometry.lower() and 'hemi' in Geometry.lower():
+                Geometry = 'Hemisphere'
+            elif 'spher' in Geometry.lower() and 'hemi' not in Geometry.lower():
+                Geometry = 'Spherical'
+            elif 'filled' in Geometry.lower(): Geometry = 'FilledCones'
+            elif 'hollow' in Geometry.lower() or 'cavity' in Geometry.lower() or 'open' in Geometry.lower():
+                if 'fix' in Geometry.lower(): Geometry = 'HollowConesFixedCavity'
+                else: Geometry = 'HollowCones'
+            # check geometry setting
+            try:
+                tmp = GeomName[Geometry]
+                self.Geometry = Geometry
+            except:
+                head = f'Geometry {Geometry}  not recognized.\n' + \
+                        'Options are \n'
+                for key in GeomName.keys():
+                    head += f'        {key: >16s}\n'
+                raise RuntimeError(head)
+            # check density profile
+            try:
+                tmp = DensName[DensityProfile]
+                self.DensityProfile = DensityProfile
+            except:
+                head = f'Density profile {DensityProfile}  not recognized.\n' + \
+                        'Options are \n'
+                for key in DensName.keys():
+                    head += f'        {key: >16s}\n'
+                raise RuntimeError(head)
+
             # set central wavelength(s)
             if hasattr(args[0],'__len__'):
                 self.w0 = array(args[0])
@@ -139,28 +195,28 @@ def profile_constructor(ProfileSubClass):
                         self.fosc = array(args[1])
                     # otherwise, inform the user and call it quits
                     else:
-                        print('OutLines requires the same number of oscilator'+\
+                        head = 'OutLines requires the same number of oscilator'+\
                             '\nstrengths as central wavelengths for '+\
-                            '\nAbsorption, Resonant, and Fluorescent line profiles')
-                        sys.exit()
+                            '\nAbsorption, Resonant, and Fluorescent line profiles'
+                        raise RuntimeError(head)
                     if ProfileSubClass.__name__ != 'Absorption':
                         if ProfileSubClass.__name__ != 'Fluorescent' :
                             if len(args[1]) == len(args[2]):
                                 self.pline = array(args[2])
                             else:
-                                print('OutLines requires the same number of oscilator'+\
-                                    '\nstrengths and channel emission fractions for '+\
-                                    '\nResonant and P Cygni line profiles')
-                                sys.exit()
+                                head = 'OutLines requires the same number of oscilator'+\
+                                    '\nstrengths and channel escape fractions for '+\
+                                    '\nResonant and P Cygni line profiles'
+                                raise RuntimeError(head)
                         if ProfileSubClass.__name__ == 'Fluorescent' :
                             if len(args[1]) == len(args[2]) and len(args[1]) == len(args[3]):
                                 self.fres  = array(args[2])
                                 self.pline = array(args[3])
                             else:
-                                print('OutLines requires the same number of oscilator'+\
-                                    '\nstrengths and channel emission fractions for '+\
-                                    '\nFluorescent line profiles')
-                                sys.exit()
+                                head = 'OutLines requires the same number of oscilator'+\
+                                    '\nstrengths and channel escape fractions for '+\
+                                    '\nFluorescent line profiles'
+                                raise RuntimeError(head)
             else:
                 self.w0 = array([args[0]])
                 # if absorption is present, set the oscilator strength if given
@@ -172,12 +228,7 @@ def profile_constructor(ProfileSubClass):
                         else:
                             self.fres  = array([args[2]])
                             self.pline = array([args[3]])
-            # set the number of lines
-            self.nLines = len(self.w0)
 
-            # set parameters, bounds, and profile model
-            self.set_params()
-            self.set_profile()
         # print documentation
         def docs(self):
             print(self.__doc__)
@@ -197,7 +248,7 @@ def profile_constructor(ProfileSubClass):
                 par_init += [ \
                     *ProfPars['Static'][self.settings['Profile']],\
                     *ProfPars['Outflow'][self.settings['Profile']] ]
-                par_name  = ['DopplerWidth','TerminalVelocity','VelocityIndex']
+                par_name  = ['DopplerWidth','TerminalVelocity']+BetaName[self.settings['VelocityField']]
                 par_name += [ \
                     *ProfName['Static'][self.settings['Profile']],\
                     *ProfName['Outflow'][self.settings['Profile']]]
@@ -209,7 +260,7 @@ def profile_constructor(ProfileSubClass):
                 par_init = [1e-3,*BetaPars[self.settings['VelocityField']]]
                 par_init += [ \
                     *ProfPars['Outflow'][self.settings['Profile']] ]
-                par_name  = ['TerminalVelocity','VelocityIndex']
+                par_name  = ['TerminalVelocity']+BetaName[self.settings['VelocityField']]
                 par_name += [ \
                     *ProfName['Outflow'][self.settings['Profile']] ]
                 par_labs  = [r'$v_\infty$ [km s$^{-1}$]',r'$\beta$']
