@@ -47,8 +47,12 @@ class Properties(object):
         self.vinf = self.params['TerminalVelocity']*c
         self.beta = self.params['VelocityIndex']
         if self.settings['Geometry'] == 'Spherical':
-            self.t0 = pi
+            self.t0 = pi/2
             self.t1 = 0
+        elif self.settings['Geometry'] == 'Hemisphere':
+            self.inc = self.params['Inclination']
+            self.t0  = pi/2
+            self.t1  = 0.
         elif self.settings['Geometry'] == 'FilledCones':
             self.inc = self.params['Inclination']
             self.t0  = self.params['OpeningAngle']
@@ -100,14 +104,16 @@ class Properties(object):
     # calculate properties of the outflow
     def calc_props(self):
         # characteristic outflow radius
-        xarr = logspace(0,2,2001)
-        xout_guess = xarr[argmax(self.mom(xarr))]
-        xout = fminbound(lambda x1: -self.mom(x1),1,2*xout_guess)
+        #xarr = logspace(0,2,2001)
+        #xout_guess = xarr[argmax(self.mom(xarr))]
+        xmax = x[self.settings['VelocityField']](0.99,self.beta,self.vini)
+        xarr = logspace(0,log10(xmax),201)
+        xgss = xarr[argmax(self.mom(xarr))]
+        xout = brent(lambda x1: -self.mom(x1),brack=(1,xgss,xmax))
         # characteristic outflow velocity
         vout = self.vinf*self.vel(xout)
         # integrated density profile
-        self.Rcal = lambda x1: self.den(self.vel(x1))
-        Rcal = fixed_quad(self.Rcal,1,xout)
+        Rcal = fixed_quad(lambda x1: self.den(self.vel(x1)),1,xout)
         # mass outflow rate in km*Msun/yr (need to multiply by R0^2 n0)
         Mdot = pi4*(cos(self.t1)-cos(self.t0))*mu*mH*vout*Rcal*yr/Msun*kpc**2*1e5
         # relative momentum injection rate in dyne
