@@ -139,6 +139,43 @@ def profile_constructor(ProfileSubClass):
             self.set_profile()
         # check inputs
         def check_inputs(self,args,VelocityField,DensityProfile,Pulse,Geometry):
+            # check for custom velocity field
+            print(VelocityField)
+            if callable(VelocityField[0]):
+                try:
+                    tmp = VelocityField[0](1,1,0.1)
+                    v['Custom'] = VelocityField[0]
+                    x['Custom'] = VelocityField[1]
+                    BetaName['Custom'] = ['VelocityIndex']
+                    BetaLabs['Custom'] = ['$\beta$']
+                    BetaPars['Custom'] = [1]
+                    BetaBounds['Custom'] = [[-inf],[ inf]]
+                    VelocityField = 'Custom'
+                except:
+                    head = f'\nCustom velocity field callables\n'+\
+                            'must have formats\n'+\
+                            '        def vel_func(x,beta,v_init)\n'+\
+                            '        def rad_func(v,beta,v_init)\n'+\
+                            'and be passed as tuple(vel_func,x_func)'
+                    raise RuntimeError(head)
+            # check for custom density profile
+            if callable(DensityProfile[0]):
+                try:
+                    tmp = DensityProfile[0](0.2,1,0.1,VelocityField,*DensityProfile[1])
+                    n['Custom'] = DensityProfile[0]
+                    DensName['Custom'] = [f'a_{i}' for i in range(len(DensityProfile[1]))]
+                    DensLabs['Custom'] = [fr'$a_{i}$' for i in range(len(DensityProfile[1]))]
+                    DensPars['Custom'] = DensityProfile[1]
+                    DensBounds['Custom'] = [[-inf for i in range(len(DensityProfile[1]))],\
+                                            [ inf for i in range(len(DensityProfile[1]))]]
+                    DensityProfile = 'Custom'
+                except:
+                    head = f'\nCustom density profile callable\n'+\
+                            'must have format\n'+\
+                            '        def den_func(v,beta,v_init,*args)\n'+\
+                            'and be passed as tuple(den_func,args) with\n'+\
+                            'args as list or array'
+                    raise RuntimeError(head)
             # screen velocity setting
             if 'cak' in VelocityField.lower() :       VelocityField = 'BetaCAK'
             elif 'plaw' in VelocityField.lower() :
@@ -150,10 +187,10 @@ def profile_constructor(ProfileSubClass):
                 tmp = BetaName[VelocityField]
                 self.VelocityField = VelocityField
             except:
-                head = f'VelocityField {VelocityField} not recognized.\n' + \
+                head = f'\nVelocityField {VelocityField} not recognized.\n' + \
                         'Options are \n'
                 for key in BetaName.keys():
-                    head += f'        {key: >16s}\n'
+                    head += f'        {key: >24s}\n'
                 raise RuntimeError(head)
             # screen geometry setting
             if 'spher' in Geometry.lower() and 'hemi' in Geometry.lower():
@@ -169,20 +206,20 @@ def profile_constructor(ProfileSubClass):
                 tmp = GeomName[Geometry]
                 self.Geometry = Geometry
             except:
-                head = f'Geometry {Geometry}  not recognized.\n' + \
+                head = f'\nGeometry {Geometry}  not recognized.\n' + \
                         'Options are \n'
                 for key in GeomName.keys():
-                    head += f'        {key: >16s}\n'
+                    head += f'        {key: >24s}\n'
                 raise RuntimeError(head)
             # check density profile
             try:
                 tmp = DensName[DensityProfile]
                 self.DensityProfile = DensityProfile
             except:
-                head = f'Density profile {DensityProfile}  not recognized.\n' + \
+                head = f'\nDensity profile {DensityProfile}  not recognized.\n' + \
                         'Options are \n'
                 for key in DensName.keys():
-                    head += f'        {key: >16s}\n'
+                    head += f'        {key: >24s}\n'
                 raise RuntimeError(head)
 
             # set central wavelength(s)
