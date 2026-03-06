@@ -140,7 +140,6 @@ def profile_constructor(ProfileSubClass):
         # check inputs
         def check_inputs(self,args,VelocityField,DensityProfile,Pulse,Geometry):
             # check for custom velocity field
-            print(VelocityField)
             if callable(VelocityField[0]):
                 try:
                     tmp = VelocityField[0](1,1,0.1)
@@ -547,14 +546,17 @@ def profile_constructor(ProfileSubClass):
             return nansum(ln_prb)
         # boundary condition check
         @staticmethod
-        def __fun_bound__(t,tl,tu):
-            return (tl<t)&(t<tu)&(isfinite(t))
+        def __fun_bound__(ti,tl,tu):
+            return (tl<ti)&(ti<tu)&(isfinite(ti))
+        @staticmethod
+        def __fun_probs__(ti,tl,tu,soft=1.0):
+            return -exp(soft*(tl-ti))-exp(soft*(ti-tu))
         # log prior -- uniform bounded
         def log_prior(self,theta):
             tlower,tupper = self.get_bounds()
             tbound = list(map(self.__fun_bound__,theta,tlower,tupper))
             if all(tbound):
-                return 0
+                return sum(list(map(self.__fun_probs__,theta,tlower,tupper)))
             else:
                 return -inf
         # log probability -- prior plus likelihood
