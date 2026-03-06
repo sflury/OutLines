@@ -6,7 +6,7 @@ from numpy.random import seed,default_rng
 global uniform_sampler,normal_sampler
 uniform_sampler = default_rng().random
 normal_sampler  = default_rng().standard_normal
-from scipy.optimize import brentq,brent
+from scipy.optimize import brentq
 from scipy.special import wofz
 from functools import partial
 ###
