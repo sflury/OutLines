@@ -548,9 +548,12 @@ def profile_constructor(ProfileSubClass):
         @staticmethod
         def __fun_bound__(ti,tl,tu):
             return (tl<ti)&(ti<tu)&(isfinite(ti))
+        # "soft" top-hat prior, ln(p) -> -1 at bounds
         @staticmethod
-        def __fun_probs__(ti,tl,tu,soft=1.0):
-            return -exp(soft*(tl-ti))-exp(soft*(ti-tu))
+        def __fun_probs__(ti,tl,tu,soft=0.5267835):
+            tm = (tl+tu)/2.
+            nm = exp(soft*(tl-tm))+exp(soft*(tm-tu))
+            return 1.+(-exp(soft*(tl-ti))-exp(soft*(ti-tu)))/nm
         # log prior -- uniform bounded
         def log_prior(self,theta):
             tlower,tupper = self.get_bounds()
