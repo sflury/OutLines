@@ -101,37 +101,43 @@ def dens_pulsegrouplog(u,beta,vini,VF,s1,x1,sigma,dx,x0,pulse='Normal'):
 ##
 # Castor-Lamers 1979 / Pauldrach 1986 beta-law approximation to CAK 1975
 def x_cak(u,beta,vini):
-    return ( 1-((u-vini)/(1-vini))**(1/beta) )**-1
+    U = (u-vini)/(1-vini)
+    return ( 1-U**(1/beta) )**-1
 #  velocity power law
 def x_vplaw(u,beta,vini,A=0.5):
-    return (((u-vini)/(1-vini))/A)**(1/beta)+1
+    U = (u-vini)/(1-vini)
+    return (U/A)**(1/beta)+1
 # Steidel 2010 acceleration power law
 def x_aplaw(u,beta,vini):
-    return ( 1  -  ((u-vini)/(1-vini))**2 )**(1/(1-beta))
+    U = (u-vini)/(1-vini)
+    return ( 1  -  U**2 )**(1/(1-beta))
 # Murray 2005 optically thick radiation pressure
 def x_M2005(u,beta,vini):
-    return exp( ((u-vini)/(1-vini))**2 )
+    U = (u-vini)/(1-vini)
+    return exp( U**2 )
 # my own exponential law
+# inspired by Chevalier & Clegg 1985
 def x_expon(u,beta,vini):
-    return 1-log(1-(u-vini)/(1-vini))/beta
+    U = (u-vini)/(1-vini)
+    return 1-log(1-U)/beta
 ##
 ## expressed as w = f(x)
 ##
 # Castor-Lamers 1979 / Pauldrach 1986 beta-law approximation to CAK 1975
 def w_cak(xv,beta,vini):
-    return (1-vini)*(1-1/xv)**beta + vini
+    return (1-vini) * (1-1/xv)**beta + vini
 #  velocity power law
 def w_vplaw(xv,beta,vini,A=0.5):
-    return A*(1-vini)*(xv-1)**beta + vini
+    return A*(1-vini) * (xv-1)**beta + vini
 # Steidel 2010 acceleration power law
 def w_aplaw(xv,beta,vini):
-    return (1-vini)*(1-xv**(1-beta))**0.5 + vini
+    return (1-vini) * (1-xv**(1-beta))**0.5 + vini
 # Murray 2005 optically thick radiation pressure
 def w_M2005(xv,beta,vini):
-    return (1-vini)*sqrt(log(x)) + vini
+    return (1-vini) * sqrt(log(xv)) + vini
 # my own exponential law
 def w_expon(xv,beta,vini):
-    return (1-vini)*(1-exp(-beta*(xv-1))) + vini
+    return (1-vini) * (1-exp(-beta*(xv-1))) + vini
 ##
 ## related differentials -- velocity gradients
 ##
