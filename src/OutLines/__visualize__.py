@@ -413,3 +413,309 @@ class PlotConeProjection(object):
             a.set_ylim(-1.1,1.1)
         plt.subplots_adjust(left=0,right=1,top=0.95,bottom=0)
         return fig,ax
+'''
+Name:
+    PlotProjectionGeometry
+
+Purpose:
+    Plot an edge-on and face-on visualization of the directed outflow cone
+    projections onto the plane of the sky, including the geometric terms used
+    to compute this projection. Three representative de-projected veloicities
+    are included to illustrate how the intersection of the projected cone and
+    projected velocities lead to different enclosed arc lengths.
+
+Arguments:
+    :i (*float*): inclination of the outflow with respect to the line of
+        sight; if i > 6.3, interpreted as units of degrees, otherwise as radians
+    :t (*float*): opening angle of the outflow with respect to the inclination;
+        if t > 6.3, interpreted as units of degrees, otherwise as radians
+
+Attributes:
+    :fig (*maplotlib.pyplot.figure*): figure instance
+    :ax  (*matplotlib.pyplot.axis*): axis instance
+'''
+class PlotProjectionGeometry(object):
+    def __init__(self,i,t):
+        if i > pi/2 :
+            i *= pi/180
+        if t > pi/2 :
+            t *= pi/180
+        fig,ax = self.plot_geom(i,t)
+        self.fig = fig
+        self.ax  = ax
+    @staticmethod
+    def plot_cone(fig,axis,i,t,color='C5'):
+        theta = linspace(0,2*pi,1001)
+        theth = linspace(0,pi,1001)
+        tcone = linspace(i-t,i+t,101)
+
+        axis.plot(cos(theta),sin(theta),color='k',lw=2)
+        axis.annotate('',xy=(1.02,0),xytext=(-0.02,0),arrowprops={'arrowstyle':'->'},zorder=5)
+        axis.plot(cos(tcone),sin(tcone),color=color,zorder=5)
+        axis.plot(cos(tcone+pi),sin(tcone+pi),color=color,zorder=5)
+        axis.plot([cos(i-t+pi),cos(i-t)],[sin(i-t+pi),sin(i-t)],color='0.5',lw=1)
+        axis.plot([cos(i+t+pi),cos(i+t)],[sin(i+t+pi),sin(i+t)],color='0.5',lw=1)
+        #
+        xi = cos(i)*cos(t)
+        yi = sin(i)*cos(t)
+        x  = sin(t)
+        y  = 0.1*cos(i)*x
+        A  = i - 3*pi/2
+        xt1 = x*cos(theth)*cos(A)-y*sin(theth)*sin(A)
+        yt1 = x*cos(theth)*sin(A)+y*sin(theth)*cos(A)
+        xt2 = x*cos(theth+pi)*cos(A)-y*sin(theth+pi)*sin(A)
+        yt2 = x*cos(theth+pi)*sin(A)+y*sin(theth+pi)*cos(A)
+        axis.plot(xt1+xi,yt1+yi,color='C5',zorder=5)
+        axis.plot(xt1-xi,yt1-yi,color='C5',zorder=5)
+        axis.plot(xt2+xi,yt2+yi,color='C5',ls=':',zorder=3)
+        axis.plot(xt2-xi,yt2-yi,color='C5',ls=':',zorder=3)
+        return axis
+    @staticmethod
+    def plot_cone_labels(fig,axis,i,t,color='C5'):
+        #
+        axis.plot([min([cos(i+t),0]),cos(i)*cos(t)],[sin(i)*cos(t),sin(i)*cos(t)],color='0.5',lw=1,ls='--')
+        axis.plot([cos(i+t),cos(i+t)],[sin(i)*cos(t),sin(i)*cos(t)+cos(i)*sin(t)],color='k',ls=':')
+        axis.plot([cos(i)*cos(t),0,0],[sin(i)*cos(t),0,sin(i)*cos(t)],color='k')
+        axis.text(-0.15,sin(i)*cos(t)/2.5,r'$S$')
+        axis.text(cos(i+t)-0.15,sin(i)*cos(t)+cos(i)*sin(t)/2.5,r'$h$')
+
+        axis.add_patch(Arc((0,0),0.36,0.36,angle=0,theta1=0,theta2=i*180/pi,color='k',lw=1.5))
+        axis.add_patch(Arc((0,0),0.58,0.58,angle=0,theta1=i*180/pi,theta2=(i+t)*180/pi,color='k',lw=1.5))
+        axis.add_patch(Arc((0,0),0.64,0.64,angle=0,theta1=i*180/pi,theta2=(i+t)*180/pi,color='k',lw=1.5))
+        axis.text(0.22*cos(i/2),0.22*sin(i/2),r'$i$',color='k')
+        axis.text(0.35*cos(i+t/2),0.35*sin(i+t/2),r'$\theta$',color='k')
+
+        return axis
+    @staticmethod
+    def plot_band(fig,axis,i,t,u,w,color='C0'):
+
+        # angle of velocity projection
+        rbnd = sqrt(1-(u/w)**2)
+        # outer cone projected as ellipse
+        f0 = sin(i)*cos(t)
+        g0 = sin(t)
+        h0 = g0*cos(i)
+        # intersection points of band contour with outer cone projections
+        a0 = (g0/h0)**2-1
+        b0 = -2*f0*(g0/h0)**2
+        c0 = rbnd**2+((f0/h0)**2-1)*g0**2
+        q0 = (-b0+array([-1,1])*sqrt(b0**2-4*a0*c0))/(2*a0)
+
+        theta = linspace(-pi/2,3*pi/2,1001)
+        xt = rbnd*cos(theta)
+        yt = rbnd*sin(theta)
+        if i == pi/2 :
+            ind = where(((yt>-q0[0])&(yt<q0[0])))[0]
+        elif i + t > pi/2 :
+            ind = where(((yt>-q0[1])&(yt<q0[0])))[0]
+        elif i == 0 :
+            if rbnd < h0-f0 :
+                ind = array([False for j in range(len(yt))])
+            else:
+                ind = array([True  for j in range(len(yt))])
+        else:
+            ind = where((yt>q0[1])|(yt<q0[0]))[0]
+        xt[ind] = nan
+        yt[ind] = nan
+        axis.plot(0.1*xt[501:]+u/w,yt[501:],zorder=4,color=color)
+        axis.plot(0.1*xt[:501]+u/w,yt[:501],zorder=4,color=color,ls=':')
+        xt[where(isfinite(xt))[0]] = nan
+        yt[where(isfinite(yt))[0]] = nan
+        xt[ind] = rbnd*cos(theta[ind])
+        yt[ind] = rbnd*sin(theta[ind])
+
+        axis.plot(0.1*xt[501:]+u/w,yt[501:],zorder=4,color=color,alpha=0.2)
+        axis.plot(0.1*xt[:501]+u/w,yt[:501],zorder=4,color=color,alpha=0.2,ls=':')
+
+        axis.text(u/w-0.28,-rbnd/1.8,r'$r_{w}$',color=color)
+        return axis
+    @staticmethod
+    def proj_cone(fig,axis,i,t):
+        theta = linspace(0,2*pi,1001)
+        axis.plot(cos(theta),sin(theta),'-k',lw=2,zorder=0)
+        if t >= pi/2 :
+            axis.plot(cos(theta),sin(theta),'C5')
+            return axis
+        # cone projected as ellipse
+        f = sin(i)*cos(t)
+        g = sin(t)
+        h = g*cos(i)
+        # intersection points of band contour with circle
+        a = (g/h)**2-1
+        b = -2*f*(g/h)**2
+        # cap projections
+        xc = 1+((f/h)**2-1)*g**2
+        xq = (-b+array([-1,1])*sqrt(b**2-4*a*xc))/(2*a)
+        xp = sqrt(1-xq**2)
+        de = arcsin(xp[0])
+
+        # flat lines at i = 90 degrees
+        if i == pi/2:
+            axis.plot([-g,g],[h+f,h+f],color='C5')
+            axis.plot([-g,g],[h-f,h-f],color='C5')
+            tc = linspace(pi/2-de,pi/2+de,1001)
+            axis.plot(cos(tc),sin(tc),color='C5')
+            tc = linspace(3*pi/2-de,3*pi/2+de,1001)
+            axis.plot(cos(tc),sin(tc),color='C5')
+        # if intersection with unit circle, account for lune
+        # from cap projection close to transverse
+        if i + t > pi/2 :
+            # ellipse + lune
+            xe = g*cos(theta)
+            ye = h*sin(theta)+f
+            if isnan(xp[0]) :
+                xp = array([xe[argmax(sqrt(xe**2+ye**2))]])
+                xq = array([ye[argmax(sqrt(xe**2+ye**2))]])
+                de = arcsin(xp)
+            xe[ye>xq[0]] = nan
+            ye[ye>xq[0]] = nan
+            axis.plot(xe,ye,color='C5')
+            tc = linspace(pi/2-de,pi/2+de,1001)
+            axis.plot(cos(tc),sin(tc),color='C5')
+            # lune
+            xe = g*cos(theta)
+            ye = h*sin(theta)-f
+            xe[ye>-xq[0]] = nan
+            ye[ye>-xq[0]] = nan
+            axis.plot(xe,ye,color='C5')
+            tc = linspace(3*pi/2-de,3*pi/2+de,1001)
+            axis.plot(cos(tc),sin(tc),color='C5')
+        # if no intersection, just an ellipse
+        else:
+            xe = g*cos(theta)
+            ye = h*sin(theta)+f
+            axis.plot(xe,ye,color='C5')
+            axis.plot(xe,ye-2*f,color='C5',ls='--')
+        return axis
+    @staticmethod
+    def proj_cone_labels(fig,axis,i,t):
+
+        # cone projected as ellipse
+        f = sin(i)*cos(t)
+        g = sin(t)
+        h = g*cos(i)
+        # intersection points of band contour with circle
+        a = (g/h)**2-1
+        b = -2*f*(g/h)**2
+        # cap projections
+        xc = 1+((f/h)**2-1)*g**2
+        xq = (-b+array([-1,1])*sqrt(b**2-4*a*xc))/(2*a)
+        xp = sqrt(1-xq**2)
+        de = arcsin(xp[0])
+
+        axis.plot([0,0],[0,f],color='k')
+        axis.plot([0,0],[f,f+h],color='k',ls=':')
+        axis.plot([0,g],[f,f],color='k',ls=':')
+        axis.plot([-1,1],[0,0],color='k',lw=1)
+        axis.text(-0.22,f/2-0.03,r'$S$')
+        axis.text(-0.22,f+h/2-0.03,r'$h$')
+        axis.text(g/2-0.03,f-0.2,r'$g$')
+
+        return axis
+    @staticmethod
+    def proj_band(fig,axis,i,t,u,w,color='C0'):
+        # angle of velocity projection
+        rbnd = sqrt(1-(u/w)**2)
+        # outer cone projected as ellipse
+        f0 = sin(i)*cos(t)
+        g0 = sin(t)
+        h0 = g0*cos(i)
+        # intersection points of band contour with outer cone projections
+        a0 = (g0/h0)**2-1
+        b0 = -2*f0*(g0/h0)**2
+        c0 = rbnd**2+((f0/h0)**2-1)*g0**2
+        q0 = (-b0+array([-1,1])*sqrt(b0**2-4*a0*c0))/(2*a0)
+        p0 = sqrt(rbnd**2-q0**2)
+
+        theta = linspace(-pi/2,3*pi/2,1001)
+        xt = rbnd*cos(theta)
+        yt = rbnd*sin(theta)
+        axis.plot(xt,yt,color=color,alpha=0.2)
+        if i == pi/2 :
+            ind = where((yt<-q0[0])|(yt>q0[0]))[0]
+        elif i + t > pi/2 :
+            ind = where(((yt>-q0[1])&(yt<q0[0])))[0]
+        elif q0[0] < 0 :
+            ind = where((yt<q0[0]))[0]
+        elif i == 0 :
+            if rbnd < h0-f0 :
+                ind = array([False for j in range(len(yt))])
+            else:
+                ind = array([True  for j in range(len(yt))])
+        else:
+            ind = where((yt>q0[1])|(yt<q0[0]))[0]
+
+        xt[ind] = nan
+        yt[ind] = nan
+
+        axis.plot(xt,yt,color=color,zorder=0)
+
+        return axis
+    @staticmethod
+    def proj_band_labels(fig,axis,i,t,u,w,color='C0'):
+
+        # angle of velocity projection
+        rbnd = sqrt(1-(u/w)**2)
+        # outer cone projected as ellipse
+        f0 = sin(i)*cos(t)
+        g0 = sin(t)
+        h0 = g0*cos(i)
+        # intersection points of band contour with outer cone projections
+        a0 = (g0/h0)**2-1
+        b0 = -2*f0*(g0/h0)**2
+        c0 = rbnd**2+((f0/h0)**2-1)*g0**2
+        q0 = (-b0+array([-1,1])*sqrt(b0**2-4*a0*c0))/(2*a0)
+        p0 = sqrt(rbnd**2-q0**2)
+
+        axis.scatter([-p0[0],p0[0]],[q0[0],q0[0]],color=color,s=50,zorder=10)
+        axis.text(p0[0]+0.05,q0[0]-0.05,r'$p,q$',color=color)
+        axis.plot([-p0[0],0,p0[0]],[q0[0],0,q0[0]],color=color,lw=1)
+        axis.text(-p0[0]/2-0.25,q0[0]/2-0.15,r'$r_{w}$',color=color)
+        ell = arcsin(q0[0]/rbnd)*180/pi
+        axis.add_patch(Arc((0,0),0.6,0.6,angle=0,theta1=ell,theta2=180-ell,color=color,lw=1.5))
+
+        if q0[1] < 1 :
+            axis.scatter([-p0[1],p0[1]],[-q0[1],-q0[1]],color=color,s=50,zorder=10)
+            axis.text(p0[1]+0.05,-q0[1]+0.05,r'$p,q$',color=color)
+            axis.plot([-p0[1],0,p0[1]],[-q0[1],0,-q0[1]],color=color,lw=1)
+            axis.text(-p0[1]/2-0.25,-q0[1]/2-0.15,r'$r_{w}$',color=color)
+            ell = arcsin(q0[1]/rbnd)*180/pi+180.
+            axis.add_patch(Arc((0,0),0.6,0.6,angle=0,theta1=ell,theta2=180-ell,color=color,lw=1.5))
+
+
+        axis.text(-0.1,0.35,r'$2\pi\ell$',color=color)
+
+        return axis
+
+    def plot_geom(self,i,t):
+        # convert to degrees
+        istr = f'{int(round(i*180/pi)):0>2d}'
+        tstr = f'{int(round(t*180/pi)):0>2d}'
+        # plotting
+        fig,axes = plt.subplots(2,2,figsize=(7,7),sharex=True,sharey=True)
+        #plot the cones
+        for a in axes[:,0]:
+            self.plot_cone(fig,a,i,t,color='C5')
+        for a in axes[:,1]:
+            self.proj_cone(fig,a,i,t)
+        axes[0,0] = self.plot_cone_labels(fig,axes[0,0],i,t,color='C5')
+        axes[0,1] = self.proj_cone_labels(fig,axes[0,1],i,t)
+        axes[0,0].set_title('Edge-On View')
+        axes[0,1].set_title('Plane of Sky')
+        for uj,cj in zip([0.3,0.45,0.6],['C2','C4','C0']):
+            # band contours
+            axes[1,0] = self.plot_band(fig,axes[1,0],i,t,uj,0.75,color=cj)
+            axes[1,1] = self.proj_band(fig,axes[1,1],i,t,uj,0.75,color=cj)
+            fig.text(0.45,0.45+(uj-0.45)/5,rf'$u/w={uj}$',color=cj)
+        axes[1,1] = self.proj_band_labels(fig,axes[1,1],i,t,0.45,0.75,color='C4')
+        # label
+        fig.text(0.45,0.9,r'$i\ =$'+f'{int(round(i*180/pi)): >3d}'+r'$^\circ$')
+        fig.text(0.45,0.87,r'$\theta\ =$'+f'{int(round(t*180/pi)): >3d}'+r'$^\circ$')
+
+        for a in axes.flatten():
+            a.set_aspect('equal')
+            a.axis('off')
+            a.set_xlim(-1.1,1.1)
+            a.set_ylim(-1.1,1.1)
+        plt.subplots_adjust(left=0,right=1,top=0.95,bottom=0)
+        return fig,axes

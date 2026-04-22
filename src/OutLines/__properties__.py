@@ -1,7 +1,5 @@
-from numpy import trapezoid,array,interp,log,log10,pi,logspace,argmax
-from scipy.optimize import brentq,fminbound
-from scipy.integrate import fixed_quad
 from OutLines.__funcs__ import *
+from OutLines.__visualize__ import *
 # hard-wired constants
 global c,mH,mu,Msun,Lsun,yr,pi4,kpc
 c    = 2.99792458e5 # km/s
@@ -50,8 +48,12 @@ class Properties(object):
         self.vinf = self.params['TerminalVelocity']*c
         self.beta = self.params['VelocityIndex']
         if self.settings['Geometry'] == 'Spherical':
-            self.t0 = pi
+            self.t0 = pi/2
             self.t1 = 0
+        elif self.settings['Geometry'] == 'Hemisphere':
+            self.inc = self.params['Inclination']
+            self.t0  = pi/2
+            self.t1  = 0.
         elif self.settings['Geometry'] == 'FilledCones':
             self.inc = self.params['Inclination']
             self.t0  = self.params['OpeningAngle']
@@ -70,26 +72,25 @@ class Properties(object):
             self.vini = self.params['LaunchVelocity']
         self.denpars = array([self.params[param] for param in self.npname])
     # options for updating the parameters
-    def update_params(self,par_name,par_val):
+    def update_params(self,par_name,par_val,recur=False):
         if hasattr(par_val,'__len__'):
             for name,val in zip(par_name,par_val):
-                self.update_params(name,val)
+                self.update_params(name,val,recur=True)
         else:
             # if velocity > 1, convert to c units
-            if 'Terminal' in par_name or 'Doppler' in par_name:
+            if 'Terminal' in par_name or 'Launch' in par_name or 'Doppler' in par_name or 'Aperture' in par_name :
                 if par_val > 1 :
                     par_val = par_val/2.99792458e5
             if 'Inclination' in par_name or 'Angle' in par_name:
-                if par_val > 2*pi :
+                if par_val > pi/2 :
+                    if par_val > 90 :
+                        print('Angles must be between 0 and 90 degrees')
                     par_val = par_val*pi/180
             self.params[par_name] = par_val
-            if self.settings['StaticComponent'] :
-                if 'Static' in par_name or 'Doppler' in par_name:
-                    self.statps[par_name] = par_val
-                else:
-                    self.outfps[par_name] = par_val
-        self.set_pars()
-        self.calc_props()
+        # if not a recursive call, recompute properties
+        if not recur :
+            self.set_pars()
+            self.calc_props()
     # density profile
     def den(self,w1):
         return n[self.settings['DensityProfile']](w1,self.beta,self.vini,\
@@ -100,17 +101,26 @@ class Properties(object):
     # outflow momentum density via Flury+ 2023
     def mom(self,x1):
         return self.den(self.vel(x1))*self.vel(x1)
+    def dmom(self,x1,h=2**-12):
+        return (self.mom(x1+h)-self.mom(x1))/h
     # calculate properties of the outflow
     def calc_props(self):
         # characteristic outflow radius
-        xarr = logspace(0,2,2001)
-        xout_guess = xarr[argmax(self.mom(xarr))]
-        xout = fminbound(lambda x1: -self.mom(x1),1,2*xout_guess)
+        xmax = x[self.settings['VelocityField']](1-2**-12,self.beta,self.vini)
+        xarr = logspace(0,log10(xmax),201)
+        xgss = xarr[argmax(self.mom(xarr))]
+        try:
+            xout = brentq(lambda x1: -self.mom(x1),1+2**-12,2*xgss)
+        except:
+            try:
+                xout = brentq(lambda x1: (self.dmom(x1)),1+2**-12,2*xgss)
+            except:
+                xarr = linspace(max([1,xgss-1]),xgss+1,1001)
+                xout = xarr[argmax(self.mom(xarr))]
         # characteristic outflow velocity
         vout = self.vinf*self.vel(xout)
         # integrated density profile
-        self.Rcal = lambda x1: self.den(self.vel(x1))
-        Rcal = fixed_quad(self.Rcal,1,xout)[0]
+        Rcal = fixed_quad(lambda x1: self.den(self.vel(x1)),1,xout)
         # mass outflow rate in km*Msun/yr (need to multiply by R0^2 n0)
         Mdot = pi4*(cos(self.t1)-cos(self.t0))*mu*mH*vout*Rcal*yr/Msun*kpc**2*1e5
         # relative momentum injection rate in dyne

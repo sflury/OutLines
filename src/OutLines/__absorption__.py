@@ -1,10 +1,11 @@
 from OutLines.__funcs__ import *
 # velocity integral limits
-def calc_limits(ww0,vinf,vini,vapr,beta,VF,Inflow=False):
+def calc_limits(ww0,vinf,beta,vini,vapr,VF,Source=True,Inflow=False):
     # error check for length of w
     if not hasattr(ww0,'__len__'):
         ww0 = array([ww0])
     # observed velocity from wavelengths, in vinf/c units
+    # with relativistic treatment
     y = absolute(((ww0)**2-1)/((ww0)**2+1)) /vinf
     # primary cone type
     if Inflow :
@@ -18,9 +19,10 @@ def calc_limits(ww0,vinf,vini,vapr,beta,VF,Inflow=False):
     umin = y[ind]
     # by definition, velocity cannot exceed terminal velocity
     # since u = v/vinf, max value is simply 1
-    # umax = ones(len(ind))
     # but must account for backlighting by source as maximum possible velocity
-    umax = array(list(map(partial(solve_u0,beta,vini,VF),y[ind])))
+    umax = ones(len(ind))
+    if Source :
+        umax = array(list(map(partial(solve_u0,beta,vini,VF),y[ind])))
     if vapr < vinf :
         wapr = array(list(map(partial(solve_u1,vapr/vinf,beta,vini,VF),y[ind])))
         umax = min([umax,wapr],axis=0)
@@ -29,6 +31,7 @@ def calc_limits(ww0,vinf,vini,vapr,beta,VF,Inflow=False):
     return umin,umax,cone
 # absorption
 def absorp(w,u,umin,vinf,beta,vini,geo,cone,par,VF,DP):
+    # polar geometry
     omega  = vinf*w                                    # relative velocity
     omega0 = vinf*umin                                 # max velocity
     Lrnzt1 = sqrt(1-omega**2)                          # Lorenzt factor ^-1
@@ -53,7 +56,7 @@ def absorp(w,u,umin,vinf,beta,vini,geo,cone,par,VF,DP):
         # cavity in cone
         if geo[12] > 0. :
             ell -= array(list(map(partial(cndk_inscr,u,vinf,*geo[11:],cone),w)))
-        ell = nanmax([ell,zeros(len(w))],axis=0)
+        ell = nanmax([ell,ell_zeros],axis=0)
     return ell*n[DP](w,beta,vini,VF,*par)*dxdw(w,beta,vini,VF)* dTheta
 # integral over column densities for range of allowed velocities
 def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
@@ -70,11 +73,41 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         # set up geometry terms that do not depend on velocity
         geo = precalc_geometry(incl,tO,tC,vdisk)
         # return the integral
-        return fixed_quad(absorp,umin,umax,args=(u,umin,vinf,beta,vini,geo,cone,par,VF,DP),n=64)[0]
+        return fixed_quad(absorp,umin,umax,args=(u,umin,vinf,beta,vini,geo,cone,par,VF,DP))
 # calculate unnormalized profile
-def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
+def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal',Source=True,Inflow=False):
+    # for ensembles, call recursively for each pulse
+    if 'Pulse' in DP :
+        phi_sum = zeros(len(ww0))
+        scale   = 1
+        if 'Damp' in DP : xi = par[3]
+        else:             xi = par[2]
+        # while loop for absorption since largest shells have narrowest lines
+        # but contribute uniquely to the total optical depth, so continue until
+        # reaching 99.9% terminal velocity
+        # --> or, for damped pulses, if > 7 e-foldings, >99.9% of total reached
+        while ( scale > 2**-10 and xi < x[VF](0.999,beta,vini) ) or xi < 5:
+            if 'Damp' in DP :
+                par1 = [xi,par[1]]
+                scale = exp(-par[0]*xi)
+                xi += par[2]
+            else:
+                par1 = [xi,par[0]]
+                scale = 1.
+                xi += par[1]
+            phi_sum += scale*calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,\
+                                                    *par1,VF=VF,DP=Pulse,Source=Source,Inflow=Inflow)
+        return phi_sum
     # obtain velocity limits for integral
-    umin,umax,cone = calc_limits(ww0,vinf,vini,vapr,beta,VF)
+    umin,umax,cone = calc_limits(ww0,vinf,beta,vini,vapr,VF,Source=Source,Inflow=Inflow)
+    # improve precision for bubble/shell integrals by limiting the radial range
+    if 'LogNormal' in DP :
+        umin = nanmax([umin,len(umin)*[v[VF](10**(par[0]-3*par[1]),beta,vini)]],axis=0)
+        umax = nanmin([umax,len(umax)*[v[VF](10**(par[0]+3*par[1]),beta,vini)]],axis=0)
+    # 99.9 percentile for normal distribution
+    elif 'Normal' in DP or 'Shell' in DP :
+        umin = nanmax([umin,len(umin)*[v[VF](par[0]-3*par[1],beta,vini)]],axis=0)
+        umax = nanmin([umax,len(umax)*[v[VF](par[0]+3*par[1],beta,vini)]],axis=0)
     # line of sight velocity with relativistic corrections
     u = absolute(((ww0)**2-1)/((ww0)**2+1)) / vinf
     # check disk radius and convert to velocity
