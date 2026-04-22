@@ -113,7 +113,7 @@ def profile_constructor(ProfileSubClass):
                     can be passed to MCMC codes like \'emcee\'
         '''
         def __init__(self,*args,VelocityField='BetaCAK',DensityProfile='PowerLaw',Pulse='Normal',\
-                    Geometry='Spherical',AddStatic=False,Disk=False,Aperture=False,FromRest=True):
+                    Geometry='Spherical',AddStatic=False,Disk=False,Aperture=False,Source=True,FromRest=True):
             # check inputs are valid
             self.check_inputs(args,VelocityField,DensityProfile,Pulse,Geometry)
             # keyword arguments specifying the model
@@ -123,6 +123,7 @@ def profile_constructor(ProfileSubClass):
                              'Geometry':self.Geometry,\
                              'StaticComponent':AddStatic,\
                              'FromRest':FromRest,\
+                             'Source':Source,\
                              'Aperture':Aperture,\
                              'Disk':Disk
                              }
@@ -645,7 +646,7 @@ class Nebular():
     '''
     def __init__(self,w0):
         kwargs = {k:self.settings[k] for k in \
-            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
+            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Source','Aperture']}
         self.OutLinesModel = build_profile_model('Nebular',**kwargs)
         pass
     # define profile with and without a static ISM component
@@ -739,7 +740,7 @@ class Absorption():
     '''
     def __init__(self,w0,fosc):
         kwargs = {k:self.settings[k] for k in \
-            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
+            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Source','Aperture']}
         self.OutLinesModel = build_profile_model('Absorption',**kwargs)
         pass
     # define profile with and without a static ISM component
@@ -849,7 +850,7 @@ class Resonant():
     '''
     def __init__(self,w0,fosc,pline):
         kwargs = {k:self.settings[k] for k in \
-            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
+            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Source','Aperture']}
         self.OutLinesModel = build_profile_model('Resonant',**kwargs)
         pass
     # define profile with and without a static ISM component
@@ -980,7 +981,7 @@ class Fluorescent():
     '''
     def __init__(self,w0,fosc_flu,fosc_res,pline):
         kwargs = {k:self.settings[k] for k in \
-            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
+            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Source','Aperture']}
         self.OutLinesModel = build_profile_model('Fluorescent',**kwargs)
         pass
     # define profile with and without a static ISM component
@@ -1111,7 +1112,7 @@ class PCygni():
     '''
     def __init__(self,w0,fosc,pline):
         kwargs = {k:self.settings[k] for k in \
-            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Aperture']}
+            ['VelocityField','DensityProfile','Geometry','Disk','FromRest','Source','Aperture']}
         self.OutLinesModelA = __absorption__.build_profile_model('Absorption',**kwargs)
         self.OutLinesModelR = __resonfluor__.build_profile_model('Resonant',**kwargs)
         pass
@@ -1220,9 +1221,9 @@ Returns:
                         galactic outflow for the user-provided model settings
 
 '''
-def build_profile_model(LineType,VelocityField='BetaCAK',DensityProfile='PowerLaw',Geometry='Sphere',Pulse='Normal',Aperture=False,Disk=False,FromRest=True):
+def build_profile_model(LineType,VelocityField='BetaCAK',DensityProfile='PowerLaw',Geometry='Sphere',Pulse='Normal',Aperture=False,Disk=False,FromRest=True,Source=True):
     # possible profile model choices
-    kwargs = dict(VF=VelocityField,DP=DensityProfile,Pulse=Pulse)
+    kwargs = dict(VF=VelocityField,DP=DensityProfile,Pulse=Pulse,Source=Source)
     # different line profile types
     calc_phi = {'Nebular':      __nebular__.calc_phi,\
                 'Resonant':     __resonfluor__.calc_phi,\

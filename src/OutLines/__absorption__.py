@@ -1,10 +1,11 @@
 from OutLines.__funcs__ import *
 # velocity integral limits
-def calc_limits(ww0,vinf,vini,vapr,beta,VF,Inflow=False):
+def calc_limits(ww0,vinf,beta,vini,vapr,VF,Source=True,Inflow=False):
     # error check for length of w
     if not hasattr(ww0,'__len__'):
         ww0 = array([ww0])
     # observed velocity from wavelengths, in vinf/c units
+    # with relativistic treatment
     y = absolute(((ww0)**2-1)/((ww0)**2+1)) /vinf
     # primary cone type
     if Inflow :
@@ -18,9 +19,10 @@ def calc_limits(ww0,vinf,vini,vapr,beta,VF,Inflow=False):
     umin = y[ind]
     # by definition, velocity cannot exceed terminal velocity
     # since u = v/vinf, max value is simply 1
-    # umax = ones(len(ind))
     # but must account for backlighting by source as maximum possible velocity
-    umax = array(list(map(partial(solve_u0,beta,vini,VF),y[ind])))
+    umax = ones(len(ind))
+    if Source :
+        umax = array(list(map(partial(solve_u0,beta,vini,VF),y[ind])))
     if vapr < vinf :
         wapr = array(list(map(partial(solve_u1,vapr/vinf,beta,vini,VF),y[ind])))
         umax = min([umax,wapr],axis=0)
@@ -73,7 +75,7 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         # return the integral
         return fixed_quad(absorp,umin,umax,args=(u,umin,vinf,beta,vini,geo,cone,par,VF,DP))
 # calculate unnormalized profile
-def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
+def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal',Source=True,Inflow=False):
     # for ensembles, call recursively for each pulse
     if 'Pulse' in DP :
         phi_sum = zeros(len(ww0))
@@ -94,10 +96,10 @@ def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='Powe
                 scale = 1.
                 xi += par[1]
             phi_sum += scale*calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,\
-                                                    *par1,VF=VF,DP=Pulse)
+                                                    *par1,VF=VF,DP=Pulse,Source=Source,Inflow=Inflow)
         return phi_sum
     # obtain velocity limits for integral
-    umin,umax,cone = calc_limits(ww0,vinf,vini,vapr,beta,VF)
+    umin,umax,cone = calc_limits(ww0,vinf,beta,vini,vapr,VF,Source=Source,Inflow=Inflow)
     # improve precision for bubble/shell integrals by limiting the radial range
     if 'LogNormal' in DP :
         umin = nanmax([umin,len(umin)*[v[VF](10**(par[0]-3*par[1]),beta,vini)]],axis=0)
