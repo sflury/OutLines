@@ -12,6 +12,10 @@ ProfName = {'Static':
             'Resonant':['LogColumnOutflow'],\
             'Fluorescent':['LogColumnOutflow'],\
             'PCygni':['LogColumnOutflow']}}
+BetaName = {'BetaCAK':['VelocityIndex'],\
+            'AccPlaw':['VelocityIndex'],\
+            'Expontl':['VelocityIndex'],\
+            'VelPlaw':['VelocityIndex']}
 GeomName = {'Spherical':[],\
             'Hemisphere':['Inclination'],\
             'FilledCones':['Inclination','OpeningAngle'],\
@@ -49,6 +53,10 @@ ProfLabs = {'Static':
             'Resonant':[r'$\log N_o$'],\
             'Fluorescent':[r'$\log N_o$'],\
             'PCygni':[r'$\log N_o$']}}
+BetaLabs = {'BetaCAK':[r'$\beta$'],\
+            'AccPlaw':[r'$\beta$'],\
+            'Expontl':[r'$\beta$'],\
+            'VelPlaw':[r'$\beta$']}
 GeomLabs = {'Spherical':[],\
             'Hemisphere':[r'$i$'],\
             'FilledCones':[r'$i$',r'$\theta_o$'],\
@@ -111,8 +119,8 @@ DensPars = {'PowerLaw':[2],\
             'PacketPulsesLog':[0.1,0.5,0.2,0.1,0.3],\
             }
 # dictionary of all recommended parameter bounds
-BetaBounds = {'BetaCAK':[[0.1],[5]],\
-            'AccPlaw':[[1.001],[5]],\
+BetaBounds = {'BetaCAK':[[2**-20],[5]],\
+            'AccPlaw':[[1.+2**-20],[5]],\
             'VelPlaw':[[0.1],[5]],\
             'Expontl':[[0.001],[5]]}
 ProfBounds = {'Static':

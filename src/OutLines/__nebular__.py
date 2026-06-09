@@ -1,10 +1,11 @@
 from OutLines.__funcs__ import *
 # velocity integral limits
-def calc_limits(ww0,vinf,beta,vini,vapr,VF,Inflow=False):
+def calc_limits(ww0,vinf,beta,vini,vapr,VF,Source=True,Inflow=False):
     # error check for length of w
     if not hasattr(ww0,'__len__'):
         ww0 = array([ww0])
     # observed velocity from wavelengths, in vinf/c units
+    # with relativistic treatment
     y = absolute(((ww0)**2-1)/((ww0)**2+1)) / vinf
     ind = where(y<1)[0]
     # u = v/vinf (not y since y here is used for vobs/v)
@@ -15,10 +16,12 @@ def calc_limits(ww0,vinf,beta,vini,vapr,VF,Inflow=False):
     # when occultation by source occurs, need to solve
     # for minimum contributing velocity to observed y
     if Inflow :
-        umin[ww0[ind]<1] = array(list(map(partial(solve_u0,beta,vini,VF),y[ind][ww0[ind]<1])))
+        if Source :
+            umin[ww0[ind]<1] = array(list(map(partial(solve_u0,beta,vini,VF),y[ind][ww0[ind]<1])))
         cone[ww0[ind]<1] = 'post'
     else:
-        umin[ww0[ind]>1] = array(list(map(partial(solve_u0,beta,vini,VF),y[ind][ww0[ind]>1])))
+        if Source :
+            umin[ww0[ind]>1] = array(list(map(partial(solve_u0,beta,vini,VF),y[ind][ww0[ind]>1])))
         cone[ww0[ind]>1] = 'post'
     # by definition, velocity cannot exceed terminal velocity
     # since u = v/vinf, max value is simply 1 unless aperture effects occur
@@ -75,7 +78,7 @@ def phi_int(vinf,beta,incl,tO,tC,vdisk,vini,par,VF,DP,u,umin,umax,cone):
         args = (u,vinf,beta,vini,geo,cone,par,VF,DP)
         return fixed_quad(nebular,umin,umax,args=args)
 # calculate unnormalized profile for a sphere or bicone
-def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal'):
+def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='PowerLaw',Pulse='Normal',Source=True,Inflow=False):
     # for ensembles, call recursively for each pulse
     if 'Pulse' in DP :
         phi_sum = zeros(len(ww0))
@@ -95,12 +98,12 @@ def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='Powe
                 par1 = [xi,par[0]]
                 xi += par[1]
             phi_pls = scale*calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,\
-                                                    *par1,VF=VF,DP=Pulse)
+                                                    *par1,VF=VF,DP=Pulse,Source=Source,Inflow=Inflow)
             phi_sum += phi_pls
             check = max(phi_pls)
         return phi_sum
     # obtain velocity limits for integral
-    umin,umax,cone = calc_limits(ww0,vinf,beta,vini,vapr,VF)
+    umin,umax,cone = calc_limits(ww0,vinf,beta,vini,vapr,VF,Source=Source,Inflow=Inflow)
     # improve precision for bubble/shell integrals by limiting the radial range
     if 'LogNormal' in DP :
         umin = max([umin,len(umin)*[v[VF](10**(par[0]-3*par[1]),beta,vini)]],axis=0)

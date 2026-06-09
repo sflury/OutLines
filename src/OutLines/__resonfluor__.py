@@ -102,7 +102,7 @@ def calc_phi(ww0,vinf,beta,incl,tO,tC,xdisk,vini,vapr,*par,VF='BetaCAK',DP='Powe
             check = max(phi_pls)
         return phi_sum
     # obtain velocity limits for integral
-    umin,umax,cone = calc_limits(ww0,vinf,vini,vapr,beta,VF,Source=Source,Inflow=Inflow)
+    umin,umax,cone = calc_limits(ww0,vinf,beta,vini,vapr,VF,Source=Source,Inflow=Inflow)
     # improve precision for bubble/shell integrals by limiting the radial range
     if 'LogNormal' in DP :
         umin = max([umin,len(umin)*[v[VF](10**(par[0]-3*par[1]),beta,vini)]],axis=0)

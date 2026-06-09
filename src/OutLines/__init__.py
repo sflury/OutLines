@@ -1,13 +1,15 @@
 '''
 name:
     OutLines
+version:
+    1.1.2
 dependencies:
     python     3.12.9
     numpy      2.3.5
     scipy      1.17.0
     matplotlib 3.10.0
 author:
-    Sophia Flury 2026.02.26
+    Sophia Flury 2026.03.04
 '''
 # OutLines functions
 import OutLines.__absorption__
@@ -19,15 +21,18 @@ import OutLines.__properties__
 import OutLines.__profiles__
 import OutLines.__visualize__
 # add class calls directly to OutLines for convenience
-OutLines.Nebular             = OutLines.__profiles__.Nebular
-OutLines.Absorption          = OutLines.__profiles__.Absorption
-OutLines.Resonant            = OutLines.__profiles__.Resonant
-OutLines.Fluorescent         = OutLines.__profiles__.Fluorescent
-OutLines.Properties          = OutLines.__properties__.Properties
-OutLines.PlotGeometry        = OutLines.__visualize__.PlotGeometry
-OutLines.PlotConeProj        = OutLines.__visualize__.PlotConeProjection
-OutLines.PlotProjGeom        = OutLines.__visualize__.PlotProjectionGeometry
-OutLines.PlotIsoContours     = OutLines.__visualize__.PlotIsoContours
+OutLines.Nebular               = OutLines.__profiles__.Nebular
+OutLines.Absorption            = OutLines.__profiles__.Absorption
+OutLines.Resonant              = OutLines.__profiles__.Resonant
+OutLines.Fluorescent           = OutLines.__profiles__.Fluorescent
+OutLines.AbsorptionSameColumn  = OutLines.__profiles__.AbsorptionSameColumn
+#OutLines.ResonantSameColumn     = OutLines.__profiles__.ResonantSameColumn
+#OutLines.FluorescentSameColumn  = OutLines.__profiles__.FluorescentSameColumn
+OutLines.Properties            = OutLines.__properties__.Properties
+OutLines.PlotGeometry          = OutLines.__visualize__.PlotGeometry
+OutLines.PlotConeProj          = OutLines.__visualize__.PlotConeProjection
+OutLines.PlotProjGeom          = OutLines.__visualize__.PlotProjectionGeometry
+OutLines.PlotIsoContours       = OutLines.__visualize__.PlotIsoContours
 # quote from Shelly's "Ode to the West Wind"
 def Quote():
     print('\nWild Spirit, which art moving everywhere;\n'+\
